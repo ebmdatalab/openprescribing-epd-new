@@ -1,0 +1,69 @@
+{
+  "name": "Low and medium intensity statins",
+  "title": "Prescribing of low and medium intensity statins as a percentage of prescribing of all statins",
+  "description": "Items of low and medium intensity statins as a percentage of items of all statins.",
+  "numerator_short": "Low and medium intensity statin items",
+  "denominator_short": "All statins items",
+  "y_label": "Perecentage of statin items prescribed as low or medium intensity",
+  "why_it_matters": [
+    "NICE guidance on <a href='https://www.nice.org.uk/guidance/ng238'>lipid modification</a>",
+    "recommends the use of a high-intensity statin (i.e. one that reduces LDL cholesterol by 40% or more). ",
+    "A table showing the percentage reduction of LDL cholesterol by statin doses can be found ",
+    "<a href='https://bnf.nice.org.uk/treatment-summaries/dyslipidaemias/'> in the BNF</a> and you can read our research paper on suboptimal ",
+    " statin treatment regimens in the <a href='https://doi.org/10.3399/bjgp20X710873'>British Journal of General Practice</a>.Please note, we have excluded ",
+    "liquid preparations from this measure."
+  ],
+  "tags": [
+    "cardiovascular",
+    "core",
+    "efficacy",
+    "nice"
+  ],
+  "url": null,
+  "is_percentage": true,
+  "is_cost_based": false,
+  "low_is_good": true,
+  "numerator_type": "custom",
+  "numerator_columns": "SUM(p.items) AS numerator",
+ "numerator_from": [
+  "{hscic}.normalised_prescribing p ",
+  "INNER JOIN {dmd}.vmp vmp ON CONCAT(SUBSTR(p.bnf_code,0,9),'AA', SUBSTR(p.bnf_code,-2), SUBSTR(p.bnf_code,-2)) = vmp.bnf_code -- joins prescribing data to vmp table using generic BNF code \n",
+  "INNER JOIN {dmd}.vpi AS vpi ON vmp.id = vpi.vmp -- joins vmp to vpi table to get ingredient strengths (strnt_nmrtr_val) \n",
+  "INNER JOIN {dmd}.ont AS ont ON vmp.id = ont.vmp -- joins vmp to ont table to get formulation codes \n",
+  "INNER JOIN {dmd}.ontformroute AS route ON ont.form = route.cd -- joins ont table to ontform table to get formulation names "
+  ],
+  "numerator_where": [
+  "route.descr IN ('capsule.oral','tablet.oral','tabletchewable.oral','tabletmodified-release.oral') -- selects only solid dose form oral formulations \n",
+  "AND ((vpi.ing = 725658002 AND strnt_nmrtr_val/((COALESCE(strnt_dnmtr_val,1))) <20) --Atorvastatin calcium trihydrate (strengths lower than 20mg) (ing code) \n",
+  "OR (vpi.ing = 406435003 AND strnt_nmrtr_val/((COALESCE(strnt_dnmtr_val,1)))<10) --Rosuvastatin calcium (strengths lower than 10mg) (ing code) \n", 
+  "OR (vpi.ing = 387584000 AND strnt_nmrtr_val/((COALESCE(strnt_dnmtr_val,1))) <80) --Simvastatin (strengths lower than 80mg) (ing code) \n",
+  "OR vpi.ing = 108597004 --Cerivastatin sodium (all strengths) (ing code) \n", 
+  "OR vpi.ing = 412392009 --Fluvastatin sodium (all strengths) (ing code) \n", 
+  "OR vpi.ing = 96306007) --Pravastatin sodium (all strengths) (ing code)"
+  ],
+ "denominator_type": "custom",
+ "denominator_columns": "SUM(p.items) AS denominator",
+ "denominator_from": [
+  "{hscic}.normalised_prescribing p ",
+  "INNER JOIN {dmd}.vmp vmp ON CONCAT(SUBSTR(p.bnf_code,0,9),'AA', SUBSTR(p.bnf_code,-2), SUBSTR(p.bnf_code,-2)) = vmp.bnf_code -- joins prescribing data to vmp table using generic BNF code \n",
+  "INNER JOIN {dmd}.vpi AS vpi ON vmp.id = vpi.vmp -- joins vmp to vpi table to get ingredient strengths (strnt_nmrtr_val) \n",
+  "INNER JOIN {dmd}.ont AS ont ON vmp.id = ont.vmp -- joins vmp to ont table to get formulation codes \n",
+  "INNER JOIN {dmd}.ontformroute AS route ON ont.form = route.cd -- joins ont table to ontform table to get formulation names "
+  ],
+  "denominator_where": [
+  "route.descr IN ('capsule.oral','tablet.oral','tabletchewable.oral','tabletmodified-release.oral') -- selects only solid dose form oral formulations \n",
+  "AND (vpi.ing = 725658002 --Atorvastatin calcium trihydrate (all strengths) (ing code) \n",
+  "OR vpi.ing = 406435003 --Rosuvastatin calcium (all strengths) (ing code) \n", 
+  "OR vpi.ing = 387584000 --Simvastatin (all strengths) (ing code) \n",
+  "OR vpi.ing = 108597004 --Cerivastatin sodium (all strengths) (ing code) \n", 
+  "OR vpi.ing = 412392009 --Fluvastatin sodium (all strengths) (ing code) \n", 
+  "OR vpi.ing = 96306007) --Pravastatin sodium (all strengths) (ing code)"
+  ],
+  "authored_by": "richard.croker@phc.ox.ac.uk",
+  "checked_by": "andrew.brown@phc.ox.ac.uk",
+  "date_reviewed": "2024-02-12",
+  "next_review": "2025-02-12",
+  "measure_complexity": "medium",
+  "measure_type": "dmd",
+  "radar_exclude": false
+}
