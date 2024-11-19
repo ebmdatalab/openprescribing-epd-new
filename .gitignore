@@ -21,7 +21,4 @@ __pycache__/
 
 # Linux trash directories
 .Trash-*/
-/data
 TRUD.secrets
-/measures_to_test
-notebooks/new_bnf_codes.csv

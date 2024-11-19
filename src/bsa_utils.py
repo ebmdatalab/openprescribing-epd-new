@@ -81,6 +81,28 @@ class CacheManager:
         # Return a list of RESOURCE_FROM values
         return [row[0] for row in result]
     
+    def check_pre_cache(self):
+        """Check all EPD_pre RESOURCE_FROM entries in the cache."""
+        with sqlite3.connect(self.cache_db_path) as conn:
+            cursor = conn.cursor()
+            cursor.execute('''
+                SELECT DISTINCT RESOURCE_FROM FROM cache WHERE RESOURCE_FROM LIKE 'EPD_pre_%'
+            ''')
+            result = cursor.fetchall()
+        # Return a list of RESOURCE_FROM values
+        return [row[0] for row in result]
+    
+    def return_pre_cache_year(self):
+        """Check all EPD_pre RESOURCE_FROM entries in the cache and get the year."""
+        with sqlite3.connect(self.cache_db_path) as conn:
+            cursor = conn.cursor()
+            cursor.execute('''
+                SELECT DISTINCT RESOURCE_FROM FROM cache WHERE RESOURCE_FROM LIKE 'EPD_pre_%'
+            ''')
+            result = cursor.fetchall()
+        result = result[0][0].split('_')[2]
+        return result
+    
     def fetch_cache(self, resource_from_list):
         """Fetch data from the cache where RESOURCE_FROM is in the provided list and remove duplicate rows."""
         query = '''
@@ -181,8 +203,17 @@ class ResourceNames:
             (self.resources_table['date'] >= self.resource_from) & 
             (self.resources_table['date'] <= self.resource_to)
         ]
+
+        pre_cache_year = int(CACHE_MANAGER_OBJ.return_pre_cache_year())
+
+        # Create the new column 'modified_table_name'
+        filtered_df['modified_table_name'] = filtered_df.apply(
+            lambda row: 'EPD_pre_2024' if row['date'].year < pre_cache_year else row['bq_table_name'],
+            axis=1
+        )
         
-        self.resource_name_list = filtered_df['bq_table_name'].tolist()
+        #self.resource_name_list = filtered_df['bq_table_name'].tolist()
+        self.resource_name_list = list(set(filtered_df['modified_table_name'].tolist()))
         self.date_list = filtered_df['date'].tolist()
 
     def return_date_list(self):
