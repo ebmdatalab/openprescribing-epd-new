@@ -351,7 +351,7 @@ def write_monthly_testing_report_html(triggered_tests, passed_tests, testing_fal
         </header>
         <p>This report details testing results for OpenPrescribing measures which have the flag testing_measure = true. Items appearing in the English Prescribing Data for {date} that have not previously appeared in the data (from Jan 2014).</p>
         {jan_alert}
-        <p><a href="https://html-preview.github.io/?url=https://github.com/chrisjwood16/openprescribing_tests/blob/main/reports/list_test_reports.html">View previous reports</a></p>
+        <p><a href="https://html-preview.github.io/?url=https://github.com/ebmdatalab/openprescribing-epd-new/blob/main/reports/list_test_reports.html">View previous reports</a></p>
     """
 
     # Check if there are any triggered tests
@@ -463,7 +463,7 @@ def generate_list_reports_html():
         # Create title for month and year
         title = title.split('_')[-1]
         title = pd.to_datetime(title).strftime('%B %Y')
-        link = f"https://html-preview.github.io/?url=https://github.com/chrisjwood16/openprescribing_tests/blob/main/reports/{html_file}"
+        link = f"https://html-preview.github.io/?url=https://github.com/ebmdatalab/openprescribing-epd-new/blob/main/reports/{html_file}"
         html_content += f'<li><a href="{link}">{title}</a></li>\n'
 
     # End the HTML content

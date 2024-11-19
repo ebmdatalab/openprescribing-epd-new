@@ -100,6 +100,7 @@ class CacheManager:
                 SELECT DISTINCT RESOURCE_FROM FROM cache WHERE RESOURCE_FROM LIKE 'EPD_pre_%'
             ''')
             result = cursor.fetchall()
+        print (f"Result is {result}")
         result = result[0][0].split('_')[2]
         return result
     
