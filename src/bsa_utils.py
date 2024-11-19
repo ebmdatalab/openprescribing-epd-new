@@ -207,6 +207,7 @@ class ResourceNames:
         pre_cache_year = int(CACHE_MANAGER_OBJ.return_pre_cache_year())
 
         # Create the new column 'modified_table_name'
+        filtered_df = filtered_df.copy()
         filtered_df['modified_table_name'] = filtered_df.apply(
             lambda row: 'EPD_pre_2024' if row['date'].year < pre_cache_year else row['bq_table_name'],
             axis=1

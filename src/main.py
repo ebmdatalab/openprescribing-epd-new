@@ -1,8 +1,8 @@
 import pandas as pd
 import bsa_utils
-#import utils
-#import testing_utils
-#import os
+import utils
+import testing_utils
+import os
 
 def main():
     dataset_id = "english-prescribing-data-epd"  # Dataset ID
@@ -15,17 +15,32 @@ def main():
 
     # Extract existing data from EPD
     date_from = "earliest"  # Can be "YYYYMM" or "earliest" or "latest", default="earliest"
-    date_to = "latest-1"  # Can be "YYYYMM" or "latest" or "latest-1", default="latest"
+    date_to = "202401"  # Can be "YYYYMM" or "latest" or "latest-1", default="latest"
 
     # Fetch existing data using BSA API
     existing_data_extract = bsa_utils.FetchData(resource=dataset_id, date_from=date_from, date_to=date_to, sql=sql, cache=True)
 
     # Extract latest data from EPD
-    date_from = "latest"  # Can be "YYYYMM" or "earliest" or "latest", default="earliest"
-    date_to = "latest"  # Can be "YYYYMM" or "latest" or "latest-1", default="latest"
+    date_from = "202402"  # Can be "YYYYMM" or "earliest" or "latest", default="earliest"
+    date_to = date_from  # Can be "YYYYMM" or "latest" or "latest-1", default="latest"
 
     # Fetch latest data using BSA API
-    #latest_data_extract = bsa_utils.FetchData(resource=dataset_id, date_from=date_from, date_to=date_to, sql=sql)
+    latest_data_extract = bsa_utils.FetchData(resource=dataset_id, date_from=date_from, date_to=date_to, sql=sql)
+
+    compare_data = utils.CompareLatest(
+        existing_data_extract.results(),
+        latest_data_extract.results(),
+        exclude_chapters=[]
+    )
+
+    chem_subs = compare_data.return_new_chem_subs()
+    bnf_codes = compare_data.return_new_bnf_codes()
+    return_new_desc_only = compare_data.return_new_desc_only()
+    data_for = latest_data_extract.return_resources_to()
+    utils.write_monthly_report_html(chem_subs, bnf_codes, return_new_desc_only, data_for)
+    utils.generate_list_reports_html()
+
+    testing_utils.run_tests(bnf_codes, data_for)
 
 if __name__ == "__main__":
     main()
