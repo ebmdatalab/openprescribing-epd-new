@@ -25,7 +25,7 @@ class CompareLatest:
         result = self.df_latest[self.df_latest['BNF_CODE'].isin(unique_codes)]
         result = self.sort_by_bnf_code(result)
         self.new_bnf_codes = result
-        self.new_bnf_codes.to_csv('new_bnf_codes.csv')
+        #self.new_bnf_codes.to_csv('new_bnf_codes.csv')
 
     def find_bnf_description_only_in_latest(self):
         latest_descriptions = set(self.df_latest['BNF_DESCRIPTION'])

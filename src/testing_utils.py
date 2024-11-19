@@ -485,7 +485,7 @@ def run_tests(bnf_codes_df, date_for):
     #testing_true, testing_false, testing_none  = read_json_files_in_github() # Uncomment this line to use GitHub files after testing locally
 
     # Load the CSV file into a pandas DataFrame - Remove this line to use passed variable version after testing
-    bnf_codes_df = pd.read_csv('new_bnf_codes.csv') # Temporary line to test locally - Remove this line after testing - will use passed variable version
+    #bnf_codes_df = pd.read_csv('new_bnf_codes.csv') # Temporary line to test locally - Remove this line after testing - will use passed variable version
 
     # Create an empty list for triggered tests
     triggered_tests = []
