@@ -225,7 +225,8 @@ def generate_list_reports_html():
     reports_dir = os.path.join("..", "reports")
     
     # Read the base64 image string from the file
-    with open("base64_image.txt", "r") as file:
+    image_path = os.path.join(os.getcwd(), "src", "base64_image.txt")
+    with open(image_path, "r") as file:
         base64_image = file.read()
 
     # Get all HTML files in the directory, except list_reports.html
