@@ -110,7 +110,8 @@ def write_monthly_report_html(chem_subs, bnf_codes, bnf_descriptions, date):
     reports_dir = os.path.join("..", "reports")
     os.makedirs(reports_dir, exist_ok=True)
 
-    with open("base64_image.txt", "r") as file:
+    image_path = os.path.join(os.getcwd(), "src", "base64_image.txt")
+    with open(image_path, "r") as file:
         base64_image = file.read()
 
     # Create an alert if January data to explain BNF structure changes
