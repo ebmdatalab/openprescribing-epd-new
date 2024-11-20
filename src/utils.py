@@ -283,17 +283,14 @@ def generate_list_reports_html():
         <ul>
     """
 
-    print (html_files)
     # Function to extract the date portion (YYYY-MM) for sorting
     def extract_date(filename):
         # Split by underscores and get the last part, then remove '.html'
         date_part = filename.split('_')[-1].replace('.html', '')
         return date_part
 
-    # Sort the list using the extracted date as the key
+    # Sort the list using the extracted date as the key so the index page appears in correct order
     html_files = sorted(html_files, key=extract_date)
-
-    print (html_files)
 
     # Add links to all HTML files
     for html_file in html_files:
