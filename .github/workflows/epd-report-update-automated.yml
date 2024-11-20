@@ -1,7 +1,9 @@
-name: English Prescribing Data Change Detector
+name: English Prescribing Data Change Detector - Automated
 
 on:
   workflow_dispatch:
+  schedule:
+    - cron: "0 10 * * *" # Runs at 10:00 AM GMT every day
 
 jobs:
   run-script:
@@ -22,7 +24,7 @@ jobs:
         pip install -r requirements.txt
 
     - name: Run Python script
-      run: python src/main.py
+      run: python src/main.py --mode auto
 
     - name: Configure Git
       run: |
@@ -32,7 +34,7 @@ jobs:
     - name: Commit changes
       run: |
         git add .
-        git commit -m "Automated changes by GitHub Actions" || echo "No changes to commit"
+        git commit -m "Automated report updates" || echo "No changes to commit"
 
     - name: Push changes
       run: git push
