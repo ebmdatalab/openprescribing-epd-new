@@ -25,7 +25,8 @@ class Config:
         self.action_method = 'datastore_search_sql?'
 
         # Create data directory if it doesn't exist
-        self.DATA_DIR = os.path.join("..", "data")
+        #self.DATA_DIR = os.path.join("..", "data")
+        self.DATA_DIR = os.path.join(os.getcwd(), "data")
         self.CACHE_DIR = os.path.join(self.DATA_DIR, "cache")
         self.CACHE_DB = os.path.join(self.CACHE_DIR, "cache_db.sqlite")
 
