@@ -251,7 +251,7 @@ def measures_filter(df, measure_data):
 ####### HTML REPORT CREATION #######
 
 def write_monthly_testing_report_html(triggered_tests, passed_tests, testing_false, testing_none, date):
-    reports_dir = os.path.join("..", "reports")
+    reports_dir = os.path.join(os.getcwd(), "reports")
     os.makedirs(reports_dir, exist_ok=True)
 
     # Create an alert if January data to explain BNF structure changes
@@ -398,7 +398,7 @@ def write_monthly_testing_report_html(triggered_tests, passed_tests, testing_fal
 
 
 def generate_list_reports_html():
-    reports_dir = os.path.join("..", "reports")
+    reports_dir = os.path.join(os.getcwd(), "reports")
     
     # Read the base64 image string from the file
     image_path = os.path.join(os.getcwd(), "src", "base64_image.txt")
@@ -481,7 +481,7 @@ def generate_list_reports_html():
         f.write(html_content)
 
 def run_tests(bnf_codes_df, date_for):
-    folder_path = '../measures_to_test'  # Temporary line to test locally
+    folder_path = os.path.join(os.getcwd(), "measures_to_test")
     testing_true, testing_false, testing_none = read_json_files_in_folder(folder_path) # Temporary line to test locally
 
     #testing_true, testing_false, testing_none  = read_json_files_in_github() # Uncomment this line to use GitHub files after testing locally
