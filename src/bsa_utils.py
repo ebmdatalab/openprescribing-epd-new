@@ -128,16 +128,17 @@ class ResourceNames:
     """
     Handles fetching and filtering resource names based on date ranges.
     """
-    def __init__(self, resource, date_from, date_to):
+    def __init__(self, resource, date_from=False, date_to=False):
         self.resource = resource
         self.resources_table = None
         self.resource_from = None
         self.resource_to = None
 
         self.get_resource_names()
-        self.resource_from = self.set_date(date_from, date_type="from")
-        self.resource_to = self.set_date(date_to, date_type="to")
-        self.resource_name_list_filter()
+        if date_from and date_to:
+            self.resource_from = self.set_date(date_from, date_type="from")
+            self.resource_to = self.set_date(date_to, date_type="to")
+            self.resource_name_list_filter()
 
     def get_resource_names(self):
         response = requests.get(f"{CONFIG_OBJ.base_endpoint}{CONFIG_OBJ.package_show_method}{self.resource}")
@@ -147,6 +148,8 @@ class ResourceNames:
         self.resources_table['date'] = pd.to_datetime(
             self.resources_table['bq_table_name'].str.extract(r'(\d{6})')[0], format='%Y%m', errors='coerce'
         )
+        #sort the table by date in ascending order
+        #self.resources_table = self.resources_table.sort_values(by='date')
 
     @staticmethod
     def validate_date(date_str):
@@ -219,6 +222,12 @@ class ResourceNames:
         self.resource_name_list = list(set(filtered_df['modified_table_name'].tolist()))
         self.date_list = filtered_df['date'].tolist()
 
+    def return_latest_resource(self):
+        #Get the latest date and bq_table_name for the latest date
+        latest_date = self.resources_table['date'].max()
+        latest_table_name = self.resources_table[self.resources_table['date'] == latest_date]['bq_table_name'].values[0]
+        return latest_date
+    
     def return_date_list(self):
         return self.date_list
     
