@@ -1,4 +1,5 @@
 import os
+import configparser
 
 # Define the directory and strings to replace
 reports_dir = os.path.join(os.getcwd(), "reports")
