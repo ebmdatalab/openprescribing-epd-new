@@ -361,7 +361,7 @@ class FetchData:
                 self.returned_df = pd.concat(self.returned_df_list)
                 self.returned_df = self.returned_df.drop(columns=['RESOURCE_FROM'])
             if self.full_results_df is None or self.full_results_df.empty:
-                self.full_results_df = pd.concat(self.returned_df)
+                self.full_results_df = self.returned_df
             else:
                 self.full_results_df = pd.concat([self.full_results_df, self.returned_df])
             self.full_results_df = self.full_results_df.drop_duplicates()
