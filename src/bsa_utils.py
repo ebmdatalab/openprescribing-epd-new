@@ -283,6 +283,7 @@ class FetchData:
         self.requests_map = []
         self.resource_list = []
         self.full_results_df = None
+        self.returned_df = None
         self.generate_api_calls()
         self.generate_request_map()
         self.collect_cached_data()
@@ -356,16 +357,16 @@ class FetchData:
     
     def join_cache_and_results(self):
         try:
-            self.returned_df_list = pd.concat(self.returned_df_list, ignore_index=True)
-            self.returned_df_list = self.returned_df_list.drop(columns=['RESOURCE_FROM'])
-        except:
-            logging.info("RESOURCE_FROM column not found in the returned dataframes.")
-        print (self.returned_df_list.dtypes)
-        if self.full_results_df is None:
-            self.full_results_df = pd.concat(self.returned_df_list)
-        else:
-            self.full_results_df = pd.concat([self.full_results_df] + self.returned_df_list)
-        self.full_results_df = self.full_results_df.drop_duplicates()
+            if len(self.returned_df_list) > 0:
+                self.returned_df = pd.concat(self.returned_df_list)
+                self.returned_df = self.returned_df.drop(columns=['RESOURCE_FROM'])
+            if self.full_results_df is None or self.full_results_df.empty:
+                self.full_results_df = pd.concat(self.returned_df)
+            else:
+                self.full_results_df = pd.concat([self.full_results_df, self.returned_df])
+            self.full_results_df = self.full_results_df.drop_duplicates()
+        except Exception as e:
+            logging.error(f"Error joining cache and results: {e}")
         
     def results(self):
         return self.full_results_df
