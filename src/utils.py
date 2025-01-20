@@ -2,10 +2,6 @@ import pandas as pd
 import os
 import configparser
 
-# Read the base URL from the text file
-with open('src/preview_url_base.txt', 'r') as file:
-    preview_base_url = file.read().strip()  # .strip() removes any extra whitespace or newline characters
-
 # Read the configuration from config.ini
 config = configparser.ConfigParser()
 config.read('src/config.ini')

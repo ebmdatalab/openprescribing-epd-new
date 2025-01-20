@@ -3,10 +3,6 @@ import os
 # Define the directory and strings to replace
 reports_dir = os.path.join(os.getcwd(), "reports")
 
-# Read the base URL from the text file
-with open('src/preview_url_base.txt', 'r') as file:
-    preview_base_url = file.read().strip()  # .strip() removes any extra whitespace or newline characters
-
 # Read the configuration from config.ini
 config = configparser.ConfigParser()
 config.read('src/config.ini')
