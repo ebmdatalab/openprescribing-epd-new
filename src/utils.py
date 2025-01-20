@@ -1,5 +1,17 @@
 import pandas as pd
 import os
+import configparser
+
+# Read the base URL from the text file
+with open('src/preview_url_base.txt', 'r') as file:
+    preview_base_url = file.read().strip()  # .strip() removes any extra whitespace or newline characters
+
+# Read the configuration from config.ini
+config = configparser.ConfigParser()
+config.read('src/config.ini')
+
+# Get the preview_base_url from the DEFAULT section
+preview_base_url = config['DEFAULT'].get('preview_base_url', '').strip()
 
 class CompareLatest:
     def __init__(self, df_existing, df_latest, exclude_chapters=[]):
@@ -197,7 +209,7 @@ def write_monthly_report_html(chem_subs, bnf_codes, bnf_descriptions, date):
         </header>
         <p>This report details items appearing in the English Prescribing Data for {date} that have not previously appeared in the data (from Jan 2014).</p>
         {jan_alert}
-        <p><a href="https://html-preview.github.io/?url=https://github.com/ebmdatalab/openprescribing-epd-new/blob/main/reports/list_reports.html">View previous reports</a></p>
+        <p><a href="{preview_base_url}url=https://github.com/ebmdatalab/openprescribing-epd-new/blob/main/reports/list_reports.html">View previous reports</a></p>
         
         <h3>New Chemical Substances</h3>
         <p>Identify "chemical substances" prescribed for the first time</p>
@@ -298,7 +310,7 @@ def generate_list_reports_html():
         # Create title for month and year
         title = title.split('_')[-1]
         title = pd.to_datetime(title).strftime('%B %Y')
-        link = f"https://html-preview.github.io/?url=https://github.com/ebmdatalab/openprescribing-epd-new/blob/main/reports/{html_file}"
+        link = f"{preview_base_url}https://github.com/ebmdatalab/openprescribing-epd-new/blob/main/reports/{html_file}"
         html_content += f'<li><a href="{link}">{title}</a></li>\n'
 
     # End the HTML content

@@ -3,7 +3,18 @@ import os
 import json
 import requests
 from bs4 import BeautifulSoup
+import configparser
 
+# Read the base URL from the text file
+with open('src/preview_url_base.txt', 'r') as file:
+    preview_base_url = file.read().strip()  # .strip() removes any extra whitespace or newline characters
+
+# Read the configuration from config.ini
+config = configparser.ConfigParser()
+config.read('src/config.ini')
+
+# Get the preview_base_url from the DEFAULT section
+preview_base_url = config['DEFAULT'].get('preview_base_url', '').strip()
 
 ###### READ MEASURES FILES ######
 def read_json_files_in_folder(folder_path):
@@ -352,7 +363,7 @@ def write_monthly_testing_report_html(triggered_tests, passed_tests, testing_fal
         </header>
         <p>This report details testing results for OpenPrescribing measures which have the flag testing_measure = true. Items appearing in the English Prescribing Data for {date} that have not previously appeared in the data (from Jan 2014).</p>
         {jan_alert}
-        <p><a href="https://html-preview.github.io/?url=https://github.com/ebmdatalab/openprescribing-epd-new/blob/main/reports/list_test_reports.html">View previous reports</a></p>
+        <p><a href="{preview_base_url}https://github.com/ebmdatalab/openprescribing-epd-new/blob/main/reports/list_test_reports.html">View previous reports</a></p>
     """
 
     # Check if there are any triggered tests
@@ -474,7 +485,7 @@ def generate_list_reports_html():
         # Create title for month and year
         title = title.split('_')[-1]
         title = pd.to_datetime(title).strftime('%B %Y')
-        link = f"https://html-preview.github.io/?url=https://github.com/ebmdatalab/openprescribing-epd-new/blob/main/reports/{html_file}"
+        link = f"{preview_base_url}https://github.com/ebmdatalab/openprescribing-epd-new/blob/main/reports/{html_file}"
         html_content += f'<li><a href="{link}">{title}</a></li>\n'
 
     # End the HTML content

@@ -355,7 +355,12 @@ class FetchData:
         return tmp_df
     
     def join_cache_and_results(self):
-        self.returned_df_list = self.returned_df_list.drop(columns=['RESOURCE_FROM'])
+        try:
+            self.returned_df_list = pd.concat(self.returned_df_list, ignore_index=True)
+            self.returned_df_list = self.returned_df_list.drop(columns=['RESOURCE_FROM'])
+        except:
+            logging.info("RESOURCE_FROM column not found in the returned dataframes.")
+        print (self.returned_df_list.dtypes)
         if self.full_results_df is None:
             self.full_results_df = pd.concat(self.returned_df_list)
         else:
