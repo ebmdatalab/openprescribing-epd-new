@@ -5,6 +5,7 @@ import testing_utils
 import os
 from datetime import datetime
 import argparse
+import logging
 
 
 
@@ -60,29 +61,53 @@ def update_reports():
     date_from = "earliest"  # Can be "YYYYMM" or "earliest" or "latest", default="earliest"
     date_to = "latest-1"  # Can be "YYYYMM" or "latest" or "latest-1", default="latest"
 
-    # Fetch existing data using BSA API
-    existing_data_extract = bsa_utils.FetchData(resource=dataset_id, date_from=date_from, date_to=date_to, sql=sql, cache=True)
+    try:
+        # Fetch existing data using BSA API
+        existing_data_extract = bsa_utils.FetchData(resource=dataset_id, date_from=date_from, date_to=date_to, sql=sql, cache=True)
+        logging.info(f"Fetched {existing_data_extract.count_results()} existing records.")
 
-    # Extract latest data from EPD
-    date_from = "latest"  # Can be "YYYYMM" or "earliest" or "latest", default="earliest"
-    date_to = "latest"  # Can be "YYYYMM" or "latest" or "latest-1", default="latest"
+        # Extract latest data from EPD
+        date_from = "latest"  # Can be "YYYYMM" or "earliest" or "latest", default="earliest"
+        date_to = "latest"  # Can be "YYYYMM" or "latest" or "latest-1", default="latest"
 
-    # Fetch latest data using BSA API
-    latest_data_extract = bsa_utils.FetchData(resource=dataset_id, date_from=date_from, date_to=date_to, sql=sql)
+        # Fetch latest data using BSA API
+        latest_data_extract = bsa_utils.FetchData(resource=dataset_id, date_from=date_from, date_to=date_to, sql=sql)
+        logging.info(f"Fetched {latest_data_extract.count_results()} new records.")
 
-    compare_data = utils.CompareLatest(
-        existing_data_extract.results(),
-        latest_data_extract.results(),
-        exclude_chapters=[]
-    )
+    except Exception as e:
+        print(f"Error fetching existing data: {e}")
+        return
 
-    chem_subs = compare_data.return_new_chem_subs()
-    bnf_codes = compare_data.return_new_bnf_codes()
-    return_new_desc_only = compare_data.return_new_desc_only()
-    data_for = latest_data_extract.return_resources_to()
-    utils.write_monthly_report_html(chem_subs, bnf_codes, return_new_desc_only, data_for)
-    utils.generate_list_reports_html()
-    testing_utils.run_tests(bnf_codes, data_for)
+    # Validate fetched data
+    if existing_data_extract.count_results() == 0 and latest_data_extract.count_results() == 0:
+        logging.error("Both existing and new data fetches failed. Exiting...")
+        return
+    elif existing_data_extract.count_results() == 0:
+        logging.error("Failed to fetch existing data. Exiting...")
+        return
+    elif latest_data_extract.count_results() == 0:
+        logging.error("Failed to fetch new data. Exiting...")
+        return
+    else:
+        print("Data fetched successfully")
+    
+    try:
+        compare_data = utils.CompareLatest(
+            existing_data_extract.results(),
+            latest_data_extract.results(),
+            exclude_chapters=[]
+        )
+
+        chem_subs = compare_data.return_new_chem_subs()
+        bnf_codes = compare_data.return_new_bnf_codes()
+        return_new_desc_only = compare_data.return_new_desc_only()
+        data_for = latest_data_extract.return_resources_to()
+        utils.write_monthly_report_html(chem_subs, bnf_codes, return_new_desc_only, data_for)
+        utils.generate_list_reports_html()
+        testing_utils.run_tests(bnf_codes, data_for)
+    except Exception as e:
+        print(f"Error comparing data: {e}")
+        return
 
 
 def main():

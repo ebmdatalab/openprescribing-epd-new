@@ -287,6 +287,7 @@ class FetchData:
         self.generate_request_map()
         self.collect_cached_data()
         self.request_data()
+        self.join_cache_and_results()
         print (f"Data retrieved.")
 
     def generate_api_calls(self):
@@ -354,6 +355,7 @@ class FetchData:
         return tmp_df
     
     def join_cache_and_results(self):
+        self.returned_df_list = self.returned_df_list.drop(columns=['RESOURCE_FROM'])
         if self.full_results_df is None:
             self.full_results_df = pd.concat(self.returned_df_list)
         else:
@@ -362,6 +364,9 @@ class FetchData:
         
     def results(self):
         return self.full_results_df
+    
+    def count_results(self):
+        return len(self.full_results_df)
     
     def return_resources_from(self):
         # Given Timestamp
