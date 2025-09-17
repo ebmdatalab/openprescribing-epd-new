@@ -25,104 +25,14 @@ class Config:
         self.action_method = 'datastore_search_sql?'
 
         # Create data directory if it doesn't exist
-        #self.DATA_DIR = os.path.join("..", "data")
         self.DATA_DIR = os.path.join(os.getcwd(), "data")
-        self.CACHE_DIR = os.path.join(self.DATA_DIR, "cache")
-        self.CACHE_DB = os.path.join(self.CACHE_DIR, "cache_db.sqlite")
 
         self.create_directories()
 
     def create_directories(self):
         os.makedirs(self.DATA_DIR, exist_ok=True)
-        os.makedirs(self.CACHE_DIR, exist_ok=True)
 
 CONFIG_OBJ = Config()
-
-class CacheManager:
-    """
-    Manages caching of API responses to avoid redundant API calls.
-    """
-    def __init__(self, cache_db_path):
-        self.cache_db_path = cache_db_path
-        self._init_db()
-
-    def _init_db(self):
-        """Initialise the SQLite database if it doesn't exist."""
-        if not os.path.exists(self.cache_db_path):
-            os.makedirs(os.path.dirname(self.cache_db_path), exist_ok=True)
-        
-        with sqlite3.connect(self.cache_db_path) as conn:
-            cursor = conn.cursor()
-            cursor.execute('''
-                CREATE TABLE IF NOT EXISTS cache (
-                    BNF_CODE TEXT,
-                    BNF_DESCRIPTION TEXT,
-                    CHEMICAL_SUBSTANCE_BNF_DESCR TEXT,
-                    RESOURCE_FROM TEXT,
-                    timestamp DATETIME DEFAULT CURRENT_TIMESTAMP
-                )
-            ''')
-            conn.commit()
-
-    def save_dataframe_to_cache(self, dataframe, resource_from):
-        """Save a DataFrame to the cache."""
-        with sqlite3.connect(self.cache_db_path) as conn:
-            dataframe['RESOURCE_FROM'] = resource_from
-            dataframe.to_sql('cache', conn, if_exists='append', index=False)
-            logging.info(f"DataFrame for {resource_from} saved to cache")
-
-    def check_cache(self):
-        """Check all distinct RESOURCE_FROM entries in the cache."""
-        with sqlite3.connect(self.cache_db_path) as conn:
-            cursor = conn.cursor()
-            cursor.execute('''
-                SELECT DISTINCT RESOURCE_FROM FROM cache
-            ''')
-            result = cursor.fetchall()
-        # Return a list of RESOURCE_FROM values
-        return [row[0] for row in result]
-    
-    def check_pre_cache(self):
-        """Check all EPD_pre RESOURCE_FROM entries in the cache."""
-        with sqlite3.connect(self.cache_db_path) as conn:
-            cursor = conn.cursor()
-            cursor.execute('''
-                SELECT DISTINCT RESOURCE_FROM FROM cache WHERE RESOURCE_FROM LIKE 'EPD_pre_%'
-            ''')
-            result = cursor.fetchall()
-        # Return a list of RESOURCE_FROM values
-        return [row[0] for row in result]
-    
-    def return_pre_cache_year(self):
-        """Check all EPD_pre RESOURCE_FROM entries in the cache and get the year."""
-        with sqlite3.connect(self.cache_db_path) as conn:
-            cursor = conn.cursor()
-            cursor.execute('''
-                SELECT DISTINCT RESOURCE_FROM FROM cache WHERE RESOURCE_FROM LIKE 'EPD_pre_%'
-            ''')
-            result = cursor.fetchall()
-        print (f"Result is {result}")
-        result = result[0][0].split('_')[2]
-        return result
-    
-    def fetch_cache(self, resource_from_list):
-        """Fetch data from the cache where RESOURCE_FROM is in the provided list and remove duplicate rows."""
-        query = '''
-            SELECT BNF_CODE, BNF_DESCRIPTION, CHEMICAL_SUBSTANCE_BNF_DESCR
-            FROM cache
-            WHERE RESOURCE_FROM IN ({placeholders})
-        '''
-        placeholders = ','.join(['?'] * len(resource_from_list))  # Dynamically create placeholders
-        with sqlite3.connect(self.cache_db_path) as conn:
-            # Load the result into a Pandas DataFrame
-            df = pd.read_sql_query(query.format(placeholders=placeholders), conn, params=resource_from_list)
-        
-        # Remove duplicate rows
-        df = df.drop_duplicates()
-        
-        return df
-
-CACHE_MANAGER_OBJ = CacheManager(CONFIG_OBJ.CACHE_DB)
 
 class ResourceNames:
     """
@@ -209,17 +119,9 @@ class ResourceNames:
             (self.resources_table['date'] <= self.resource_to)
         ]
 
-        pre_cache_year = int(CACHE_MANAGER_OBJ.return_pre_cache_year())
-
-        # Create the new column 'modified_table_name'
         filtered_df = filtered_df.copy()
-        filtered_df['modified_table_name'] = filtered_df.apply(
-            lambda row: 'EPD_pre_2024' if row['date'].year < pre_cache_year else row['bq_table_name'],
-            axis=1
-        )
         
-        #self.resource_name_list = filtered_df['bq_table_name'].tolist()
-        self.resource_name_list = list(set(filtered_df['modified_table_name'].tolist()))
+        self.resource_name_list = list(set(filtered_df['bq_table_name'].tolist()))
         self.date_list = filtered_df['date'].tolist()
 
     def return_latest_resource(self):
@@ -241,12 +143,10 @@ class APICall:
     """
     Represents a single API call with caching capabilities.
     """
-    def __init__(self, resource_id, sql, cache=False):
+    def __init__(self, resource_id, sql):
         self.resource_id = resource_id
         self.sql = sql
-        self.cache = cache
         self.api_url = None
-        self.cache_data = None
         self.set_table_name()
         self.generate_url()
 
@@ -267,17 +167,15 @@ class APICall:
 class FetchData:
     """
     Orchestrates the fetching of data from the API, including handling
-    of cache, API calls, and data processing.
+    of API calls, and data processing.
     """
-    def __init__(self, resource, sql, date_from, date_to, cache=True, max_attempts = 3):
-        print (f"Fetching data please wait...")
+    def __init__(self, resource, sql, date_from, date_to = False, max_attempts = 3):
+        logging.info(f"Initializing FetchData for resource: {resource} from {date_from} to {date_to if date_to else 'latest'}")
         self.resource = resource
         self.sql = sql
-        self.cache = cache
         self.max_attempts = max_attempts
         self.resource_names_obj = ResourceNames(resource, date_from, date_to)
         self.api_calls_list = []
-        self.cached_calls_list = []
         self.returned_json_list = []
         self.returned_df_list = []
         self.requests_map = []
@@ -286,32 +184,19 @@ class FetchData:
         self.returned_df = None
         self.generate_api_calls()
         self.generate_request_map()
-        self.collect_cached_data()
         self.request_data()
-        self.join_cache_and_results()
-        print (f"Data retrieved.")
+        self.join_results()
+        logging.info(f"Data fetch complete.")
 
     def generate_api_calls(self):
-        cached_resources_list = CACHE_MANAGER_OBJ.check_cache()
         for resource_id in self.resource_names_obj.resource_name_list:
-            if resource_id in cached_resources_list and self.cache:
-                self.cached_calls_list.append(resource_id)
-            else:
-                self.api_calls_list.append(APICall(resource_id, self.sql, self.cache))
+            self.api_calls_list.append(APICall(resource_id, self.sql))
 
     def generate_request_map(self):
         for api_call in self.api_calls_list:
-            if api_call.cache_data:
-                self.returned_json_list.append(api_call.cache_data)
-            else:
-                request_entry = {"resource_id": api_call.resource_id, "api_url": api_call.api_url}
-                self.requests_map.append(request_entry)
-                self.resource_list.append(api_call.resource_id)
-
-    def collect_cached_data(self):
-        if self.cache:
-            logging.info(f"Fetching cached data for the following resources: {self.cached_calls_list}")
-            self.full_results_df = CACHE_MANAGER_OBJ.fetch_cache(self.cached_calls_list)
+            request_entry = {"resource_id": api_call.resource_id, "api_url": api_call.api_url}
+            self.requests_map.append(request_entry)
+            self.resource_list.append(api_call.resource_id)
 
     def request_data(self):
         for resource in list(self.requests_map):
@@ -328,10 +213,7 @@ class FetchData:
                         tmp_df = self.process_data(response.json())
                         self.returned_df_list.append(tmp_df)
                         
-                        if self.cache:
-                            CACHE_MANAGER_OBJ.save_dataframe_to_cache(tmp_df, resource_id)
                         logging.info(f"Success for {response.url}")
-                        #self.requests_map.remove(url)  # Remove the URL from the map upon success
                         url_pending = False  # Exit retry loop
                     else:
                         logging.error(f"Error {response.status_code} for {response.url}. Will retry.")
@@ -355,18 +237,17 @@ class FetchData:
         tmp_df.drop_duplicates(inplace=True)
         return tmp_df
     
-    def join_cache_and_results(self):
+    def join_results(self):
         try:
             if len(self.returned_df_list) > 0:
                 self.returned_df = pd.concat(self.returned_df_list)
-                self.returned_df = self.returned_df.drop(columns=['RESOURCE_FROM'])
             if self.full_results_df is None or self.full_results_df.empty:
                 self.full_results_df = self.returned_df
             else:
                 self.full_results_df = pd.concat([self.full_results_df, self.returned_df])
             self.full_results_df = self.full_results_df.drop_duplicates()
         except Exception as e:
-            logging.error(f"Error joining cache and results: {e}")
+            logging.error(f"Error joining results: {e}")
         
     def results(self):
         return self.full_results_df

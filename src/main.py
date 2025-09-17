@@ -2,6 +2,7 @@ import pandas as pd
 import bsa_utils
 import utils
 import testing_utils
+import op_utils
 import os
 from datetime import datetime
 import argparse
@@ -37,34 +38,55 @@ def check_latest_published_data():
     return latest_published_data_date
     
 def check_if_up_to_date():
+    logging.info(f"Checking if reports are up to date.")
     latest_published_report = check_latest_published_report()
     try:
         latest_published_report = datetime.strptime(latest_published_report, "%Y-%m")
+        logging.info(f"Latest published report is {latest_published_report.strftime('%Y-%m')}.")
     except ValueError as e:
         raise ValueError(f"Invalid date format in latest_published_report: {latest_published_report}") from e
 
     latest_published_data = check_latest_published_data()
+    logging.info(f"Latest published data is {latest_published_data.strftime('%Y-%m')}.")
+    
     if latest_published_report >= latest_published_data:
+        logging.info(f"Reports are up to date.")
         return True
     else:
+        logging.info(f"New data is available.")
         return False
+    
+def convert_to_yyyymm(date):
+    ts = pd.Timestamp(date)
+    yyyymm_str = ts.strftime('%Y%m')
+    return yyyymm_str
 
 def update_reports():
-    dataset_id = "english-prescribing-data-epd"  # Dataset ID
-    # FIND NEW PRODUCTS
-    sql = (
-        "SELECT DISTINCT BNF_CODE, BNF_DESCRIPTION, CHEMICAL_SUBSTANCE_BNF_DESCR "
-        "{FROM_TABLE}"
-    )
+    latest_published_data = check_latest_published_data()
+    latest_published_yyyymm = convert_to_yyyymm(latest_published_data)
 
-    # Extract existing data from EPD
-    date_from = "earliest"  # Can be "YYYYMM" or "earliest" or "latest", default="earliest"
-    date_to = "latest-1"  # Can be "YYYYMM" or "latest" or "latest-1", default="latest"
+    dataset_id = "english-prescribing-dataset-epd-with-snomed-code"  # Dataset ID
+    # FIND NEW PRODUCTS
+    #sql = (
+    #    "SELECT DISTINCT BNF_CODE, BNF_DESCRIPTION, CHEMICAL_SUBSTANCE_BNF_DESCR "
+    #    "{FROM_TABLE}"
+    #)
+    sql = (
+        "SELECT DISTINCT "
+        "BNF_PRESENTATION_CODE AS BNF_CODE, "
+        "BNF_PRESENTATION_NAME AS BNF_DESCRIPTION, "
+        "BNF_CHEMICAL_SUBSTANCE AS CHEMICAL_SUBSTANCE_BNF_DESCR "
+        "{FROM_TABLE} "
+    )
 
     try:
         # Fetch existing data using BSA API
-        existing_data_extract = bsa_utils.FetchData(resource=dataset_id, date_from=date_from, date_to=date_to, sql=sql, cache=True)
-        logging.info(f"Fetched {existing_data_extract.count_results()} existing records.")
+        #date_from = "earliest"  # Can be "YYYYMM" or "earliest" or "latest", default="earliest"
+        #date_to = "latest-1"  # Can be "YYYYMM" or "latest" or "latest-1", default="latest"
+
+        #existing_data_extract = bsa_utils.FetchData(resource=dataset_id, date_from=date_from, date_to=date_to, sql=sql, cache=True)
+        existing_data_extract = op_utils.retrieve_historic_drugs(latest_published_yyyymm)
+        logging.info(f"Fetched {len(existing_data_extract)} existing records.")
 
         # Extract latest data from EPD
         date_from = "latest"  # Can be "YYYYMM" or "earliest" or "latest", default="earliest"
@@ -79,10 +101,10 @@ def update_reports():
         return
 
     # Validate fetched data
-    if existing_data_extract.count_results() == 0 and latest_data_extract.count_results() == 0:
+    if len(existing_data_extract) == 0 and latest_data_extract.count_results() == 0:
         logging.error("Both existing and new data fetches failed. Exiting...")
         return
-    elif existing_data_extract.count_results() == 0:
+    elif len(existing_data_extract) == 0:
         logging.error("Failed to fetch existing data. Exiting...")
         return
     elif latest_data_extract.count_results() == 0:
@@ -93,7 +115,7 @@ def update_reports():
     
     try:
         compare_data = utils.CompareLatest(
-            existing_data_extract.results(),
+            existing_data_extract,
             latest_data_extract.results(),
             exclude_chapters=[]
         )
