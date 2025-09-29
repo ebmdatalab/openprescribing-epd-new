@@ -1,6 +1,22 @@
 from google.cloud import bigquery
+from google.oauth2 import service_account
 import pandas as pd
 import re
+import os
+import json
+
+def make_bq_client():
+    env_json = os.getenv("BQ_SERVICE_ACCOUNT_KEY")
+    if env_json:
+        creds_info = json.loads(env_json)  # this must be the full JSON, not base64
+        credentials = service_account.Credentials.from_service_account_info(creds_info)
+        project_id = creds_info.get("project_id")
+        return bigquery.Client(project=project_id, credentials=credentials)
+
+    # Fallback to a file if present (useful for local dev)
+    key_path = os.getenv("GOOGLE_APPLICATION_CREDENTIALS", "bq-service-account.json")
+    if os.path.exists(key_path):
+        return bigquery.Client.from_service_account_json(key_path)
 
 def retrieve_historic_drugs(before_year_month: str | int) -> pd.DataFrame:
     """
@@ -14,7 +30,7 @@ def retrieve_historic_drugs(before_year_month: str | int) -> pd.DataFrame:
         raise ValueError("before_year_month must be a 6-digit string or int like 202506")
     cutoff = int(s)
 
-    client = bigquery.Client.from_service_account_json("bq-service-account.json")
+    client = make_bq_client()
 
     sql = """
     SELECT DISTINCT
