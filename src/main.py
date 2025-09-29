@@ -32,12 +32,12 @@ def check_latest_published_report():
     else:
         return False
 
-def check_latest_published_data():
-    resources = bsa_utils.ResourceNames(resource="english-prescribing-data-epd")
+def check_latest_published_data(dataset_id):
+    resources = bsa_utils.ResourceNames(resource=dataset_id)
     latest_published_data_date = resources.return_latest_resource()
     return latest_published_data_date
     
-def check_if_up_to_date():
+def check_if_up_to_date(dataset_id):
     logging.info(f"Checking if reports are up to date.")
     latest_published_report = check_latest_published_report()
     try:
@@ -46,7 +46,7 @@ def check_if_up_to_date():
     except ValueError as e:
         raise ValueError(f"Invalid date format in latest_published_report: {latest_published_report}") from e
 
-    latest_published_data = check_latest_published_data()
+    latest_published_data = check_latest_published_data(dataset_id)
     logging.info(f"Latest published data is {latest_published_data.strftime('%Y-%m')}.")
     
     if latest_published_report >= latest_published_data:
@@ -61,11 +61,10 @@ def convert_to_yyyymm(date):
     yyyymm_str = ts.strftime('%Y%m')
     return yyyymm_str
 
-def update_reports():
-    latest_published_data = check_latest_published_data()
+def update_reports(dataset_id):
+    latest_published_data = check_latest_published_data(dataset_id)
     latest_published_yyyymm = convert_to_yyyymm(latest_published_data)
 
-    dataset_id = "english-prescribing-dataset-epd-with-snomed-code"  # Dataset ID
     # FIND NEW PRODUCTS
     #sql = (
     #    "SELECT DISTINCT BNF_CODE, BNF_DESCRIPTION, CHEMICAL_SUBSTANCE_BNF_DESCR "
@@ -133,6 +132,7 @@ def update_reports():
 
 
 def main():
+    dataset_id = "english-prescribing-dataset-epd-with-snomed-code"  # Dataset ID
     # Create the parser
     parser = argparse.ArgumentParser(description="Process an optional mode argument.")
     
@@ -151,12 +151,12 @@ def main():
     mode = args.mode
 
     if mode == "force":
-        update_reports()
+        update_reports(dataset_id)
     elif mode == "auto":
-        if check_if_up_to_date():
+        if check_if_up_to_date(dataset_id):
             print("The reports are up to date.")
         else:
-            update_reports()
+            update_reports(dataset_id)
 
 if __name__ == "__main__":
     main()
