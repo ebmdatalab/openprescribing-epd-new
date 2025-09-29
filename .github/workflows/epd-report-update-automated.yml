@@ -24,6 +24,8 @@ jobs:
         pip install -r requirements.txt
 
     - name: Run Python script
+      env:
+        BQ_SERVICE_ACCOUNT_KEY: ${{ secrets.BQ_SERVICE_ACCOUNT_KEY }}
       run: python src/main.py --mode auto
 
     - name: Configure Git
