@@ -1,6 +1,7 @@
 import pandas as pd
 import os
 import configparser
+import re
 
 # Read the configuration from config.ini
 config = configparser.ConfigParser()
@@ -8,6 +9,22 @@ config.read('src/config.ini')
 
 # Get the preview_base_url from the DEFAULT section
 preview_base_url = config['DEFAULT'].get('preview_base_url', '').strip()
+
+# tokeniser for arbitrary tails (letters, digits, other)
+_token_re = re.compile(r'\d+|[A-Za-z]+|[^A-Za-z0-9]+')
+
+def _alphanum_key(s):
+    """Return tuple key for mixed alphanumeric string s."""
+    parts = _token_re.findall(s or '')
+    key = []
+    for p in parts:
+        if p.isdigit():
+            key.append((0, int(p)))      # numeric run -> compare numerically
+        elif p.isalpha():
+            key.append((1, p.upper()))   # letter run -> compare lexicographically (case normalised)
+        else:
+            key.append((2, p))           # punctuation/other -> lowest precedence among non-numeric/alpha
+    return tuple(key)
 
 class CompareLatest:
     def __init__(self, df_existing, df_latest, exclude_chapters=[]):
@@ -31,9 +48,7 @@ class CompareLatest:
         unique_codes = latest_codes - existing_codes
 
         result = self.df_latest[self.df_latest['BNF_CODE'].isin(unique_codes)]
-        result = self.sort_by_bnf_code(result)
         self.new_bnf_codes = result
-        #self.new_bnf_codes.to_csv('new_bnf_codes.csv')
 
     def find_bnf_description_only_in_latest(self):
         latest_descriptions = set(self.df_latest['BNF_DESCRIPTION'])
@@ -41,7 +56,6 @@ class CompareLatest:
         unique_descriptions = latest_descriptions - existing_descriptions
 
         result = self.df_latest[self.df_latest['BNF_DESCRIPTION'].isin(unique_descriptions)]
-        result = self.sort_by_bnf_code(result)
         self.new_bnf_descriptions = result
 
     def find_chemical_substance_bnf_descr_only_in_latest(self):
@@ -50,7 +64,6 @@ class CompareLatest:
         unique_substances = latest_substances - existing_substances
 
         result = self.df_latest[self.df_latest['CHEMICAL_SUBSTANCE_BNF_DESCR'].isin(unique_substances)]
-        result = self.sort_by_bnf_code(result)
         self.new_chem_subs = result
 
     @staticmethod
@@ -77,16 +90,56 @@ class CompareLatest:
 
     @staticmethod
     def sort_by_bnf_code(df):
+        """
+        Hybrid sort for BNF / product codes.
+
+        Key logic:
+        1) If the code has at least 6 leading digits, interpret the first 6 as:
+            chapter (2 digits), section (2 digits), paragraph (2 digits).
+            The remainder (if any) is tokenised with _alphanum_key.
+            Key: (0, chapter:int, section:int, paragraph:int, remainder_key)
+        2) Else if the code is entirely digits, treat it as a product id and sort numerically:
+            Key: (1, int(code))
+        3) Otherwise treat as general alphanumeric and use _alphanum_key:
+            Key: (2, alphanum_key(code))
+        This preserves the BNF hierarchy while correctly ordering numeric product codes and other strings.
+        """
         df = df.copy()
-        df.loc[:, 'BNF_CHAPTER'] = df['BNF_CODE'].str[:2]
-        df.loc[:, 'BNF_SECTION'] = df['BNF_CODE'].str[2:4]
-        df.loc[:, 'BNF_PARAGRAPH'] = df['BNF_CODE'].str[4:6]
-        df.loc[:, 'BNF_SUBPARAGRAPH'] = df['BNF_CODE'].str[6]
 
-        df = df.sort_values(by=['BNF_CHAPTER', 'BNF_SECTION', 'BNF_PARAGRAPH', 'BNF_SUBPARAGRAPH'])
-        df = df.drop(columns=['BNF_CHAPTER', 'BNF_SECTION', 'BNF_PARAGRAPH', 'BNF_SUBPARAGRAPH'])
-        df = df.reset_index(drop=True)
+        cache = {}
 
+        def make_key(code):
+            s = '' if code is None else str(code)
+            if s in cache:
+                return cache[s]
+
+            # attempt: first 6 chars digits -> BNF hierarchy
+            prefix6 = s[:6]
+            if len(prefix6) == 6 and prefix6.isdigit():
+                chap = int(prefix6[:2])
+                sect = int(prefix6[2:4])
+                para = int(prefix6[4:6])
+                tail = s[6:]
+                tail_key = _alphanum_key(tail)
+                key = (0, chap, sect, para, tail_key)
+                cache[s] = key
+                return key
+
+            # numeric-only long product codes (e.g. 20033000572)
+            if s.isdigit():
+                key = (1, int(s))
+                cache[s] = key
+                return key
+
+            # fallback: general alphanumeric
+            key = (2, _alphanum_key(s))
+            cache[s] = key
+            return key
+
+        df['_sort_key'] = df['BNF_CODE'].map(make_key)
+
+        # stable sort to preserve order within equal keys
+        df = df.sort_values(by='_sort_key', kind='mergesort').drop(columns=['_sort_key']).reset_index(drop=True)
         return df
     
     @staticmethod
@@ -103,16 +156,16 @@ class CompareLatest:
         return unique_rows
       
     def return_new_chem_subs(self):
-        return self.new_chem_subs
+        return self.sort_by_bnf_code(self.new_chem_subs)
     
     def return_new_bnf_codes(self):
-        return self.new_bnf_codes
+        return self.sort_by_bnf_code(self.new_bnf_codes)
     
     def return_new_bnf_descriptions(self):
-        return self.new_bnf_descriptions
+        return self.sort_by_bnf_code(self.new_bnf_descriptions)
     
     def return_new_desc_only(self):
-        return self.new_desc_only
+        return self.sort_by_bnf_code(self.new_desc_only)
 
 def write_monthly_report_html(chem_subs, bnf_codes, bnf_descriptions, date):
     reports_dir = os.path.join(os.getcwd(), "reports")
