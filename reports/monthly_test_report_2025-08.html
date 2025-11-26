@@ -81,7 +81,7 @@
         <p>This report details testing results for OpenPrescribing measures which have the flag testing_measure = true. Items appearing in the English Prescribing Data for 2025-08 that have not previously appeared in the data (from Jan 2014).</p>
         
         <p><a href="https://htmlpreview.github.io/?https://github.com/ebmdatalab/openprescribing-epd-new/blob/main/reports/list_test_reports.html">View previous reports</a></p>
-    <h2>Measures to check:</h2><a href='https://github.com/ebmdatalab/openprescribing/tree/main/openprescribing/measures/definitions/edoxaban.json'><h3>edoxaban.json <span class="svg-icon"><svg xmlns="http://www.w3.org/2000/svg" fill="#f97306" class="bi bi-question-lg" viewBox="0 0 16 16"><path fill-rule="evenodd" d="M4.475 5.458c-.284 0-.514-.237-.47-.517C4.28 3.24 5.576 2 7.825 2c2.25 0 3.767 1.36 3.767 3.215 0 1.344-.665 2.288-1.79 2.973-1.1.659-1.414 1.118-1.414 2.01v.03a.5.5 0 0 1-.5.5h-.77a.5.5 0 0 1-.5-.495l-.003-.2c-.043-1.221.477-2.001 1.645-2.712 1.03-.632 1.397-1.135 1.397-2.028 0-.979-.758-1.698-1.926-1.698-1.009 0-1.71.529-1.938 1.402-.066.254-.278.461-.54.461h-.777ZM7.496 14c.622 0 1.095-.474 1.095-1.09 0-.618-.473-1.092-1.095-1.092-.606 0-1.087.474-1.087 1.091S6.89 14 7.496 14"/></svg></span></h3></a><p>Simple test to identify new oral anticoagulants. New chemicals might need to be added. Specific formulations (e.g. granules) might need to be added.</p><p><table border="1" class="dataframe table">
+    <h2>Measures to check:</h2><a href='https://github.com/ebmdatalab/openprescribing/tree/main/openprescribing/measures/definitions/cgm_sensors.json'><h3>cgm_sensors.json <span class="svg-icon"><svg xmlns="http://www.w3.org/2000/svg" fill="#f97306" class="bi bi-question-lg" viewBox="0 0 16 16"><path fill-rule="evenodd" d="M4.475 5.458c-.284 0-.514-.237-.47-.517C4.28 3.24 5.576 2 7.825 2c2.25 0 3.767 1.36 3.767 3.215 0 1.344-.665 2.288-1.79 2.973-1.1.659-1.414 1.118-1.414 2.01v.03a.5.5 0 0 1-.5.5h-.77a.5.5 0 0 1-.5-.495l-.003-.2c-.043-1.221.477-2.001 1.645-2.712 1.03-.632 1.397-1.135 1.397-2.028 0-.979-.758-1.698-1.926-1.698-1.009 0-1.71.529-1.938 1.402-.066.254-.278.461-.54.461h-.777ZM7.496 14c.622 0 1.095-.474 1.095-1.09 0-.618-.473-1.092-1.095-1.092-.606 0-1.087.474-1.087 1.091S6.89 14 7.496 14"/></svg></span></h3></a><p>Simple test to identify CGM - transmitter codes etc might also be found and can be ignored. The measure relies on dm+d codes so might need recalculation if dm+d not imported before data.</p><p><table border="1" class="dataframe table">
   <thead>
     <tr style="text-align: right;">
       <th>BNF_CODE</th>
@@ -91,24 +91,9 @@
   </thead>
   <tbody>
     <tr>
-      <td>0208020Y0AAAJAJ</td>
-      <td>Rivaroxaban 5mg/ml oral suspension sugar free</td>
-      <td>Rivaroxaban</td>
-    </tr>
-  </tbody>
-</table></p><a href='https://github.com/ebmdatalab/openprescribing/tree/main/openprescribing/measures/definitions/nhse_bgts.json'><h3>nhse_bgts.json <span class="svg-icon"><svg xmlns="http://www.w3.org/2000/svg" fill="#f97306" class="bi bi-question-lg" viewBox="0 0 16 16"><path fill-rule="evenodd" d="M4.475 5.458c-.284 0-.514-.237-.47-.517C4.28 3.24 5.576 2 7.825 2c2.25 0 3.767 1.36 3.767 3.215 0 1.344-.665 2.288-1.79 2.973-1.1.659-1.414 1.118-1.414 2.01v.03a.5.5 0 0 1-.5.5h-.77a.5.5 0 0 1-.5-.495l-.003-.2c-.043-1.221.477-2.001 1.645-2.712 1.03-.632 1.397-1.135 1.397-2.028 0-.979-.758-1.698-1.926-1.698-1.009 0-1.71.529-1.938 1.402-.066.254-.278.461-.54.461h-.777ZM7.496 14c.622 0 1.095-.474 1.095-1.09 0-.618-.473-1.092-1.095-1.092-.606 0-1.087.474-1.087 1.091S6.89 14 7.496 14"/></svg></span></h3></a><p>Simple test to identify new products based on set BNF code filter.</p><p><table border="1" class="dataframe table">
-  <thead>
-    <tr style="text-align: right;">
-      <th>BNF_CODE</th>
-      <th>BNF_DESCRIPTION</th>
-      <th>CHEMICAL_SUBSTANCE_BNF_DESCR</th>
-    </tr>
-  </thead>
-  <tbody>
-    <tr>
-      <td>0601060D0FFAAA0</td>
-      <td>Neon GK+ Glucose testing strips</td>
-      <td>Glucose blood testing reagents</td>
+      <td>21480000113</td>
+      <td>GlucoMen iCan Sensor</td>
+      <td>Detection Sensor Interstitial Fluid/Gluc</td>
     </tr>
   </tbody>
 </table></p><a href='https://github.com/ebmdatalab/openprescribing/tree/main/openprescribing/measures/definitions/opioidome.json'><h3>opioidome.json <span class="svg-icon"><svg xmlns="http://www.w3.org/2000/svg" fill="#f97306" class="bi bi-question-lg" viewBox="0 0 16 16"><path fill-rule="evenodd" d="M4.475 5.458c-.284 0-.514-.237-.47-.517C4.28 3.24 5.576 2 7.825 2c2.25 0 3.767 1.36 3.767 3.215 0 1.344-.665 2.288-1.79 2.973-1.1.659-1.414 1.118-1.414 2.01v.03a.5.5 0 0 1-.5.5h-.77a.5.5 0 0 1-.5-.495l-.003-.2c-.043-1.221.477-2.001 1.645-2.712 1.03-.632 1.397-1.135 1.397-2.028 0-.979-.758-1.698-1.926-1.698-1.009 0-1.71.529-1.938 1.402-.066.254-.278.461-.54.461h-.777ZM7.496 14c.622 0 1.095-.474 1.095-1.09 0-.618-.473-1.092-1.095-1.092-.606 0-1.087.474-1.087 1.091S6.89 14 7.496 14"/></svg></span></h3></a><p>Simple test to identify new opioid medications. The actual measure relies on views to identify opioids and convert to OME. Consider if new OME conversion needed.</p><p><table border="1" class="dataframe table">
@@ -126,22 +111,7 @@
       <td>Oxycodone hydrochloride/naloxone hydrochloride</td>
     </tr>
   </tbody>
-</table></p><a href='https://github.com/ebmdatalab/openprescribing/tree/main/openprescribing/measures/definitions/cgm_sensors.json'><h3>cgm_sensors.json <span class="svg-icon"><svg xmlns="http://www.w3.org/2000/svg" fill="#f97306" class="bi bi-question-lg" viewBox="0 0 16 16"><path fill-rule="evenodd" d="M4.475 5.458c-.284 0-.514-.237-.47-.517C4.28 3.24 5.576 2 7.825 2c2.25 0 3.767 1.36 3.767 3.215 0 1.344-.665 2.288-1.79 2.973-1.1.659-1.414 1.118-1.414 2.01v.03a.5.5 0 0 1-.5.5h-.77a.5.5 0 0 1-.5-.495l-.003-.2c-.043-1.221.477-2.001 1.645-2.712 1.03-.632 1.397-1.135 1.397-2.028 0-.979-.758-1.698-1.926-1.698-1.009 0-1.71.529-1.938 1.402-.066.254-.278.461-.54.461h-.777ZM7.496 14c.622 0 1.095-.474 1.095-1.09 0-.618-.473-1.092-1.095-1.092-.606 0-1.087.474-1.087 1.091S6.89 14 7.496 14"/></svg></span></h3></a><p>Simple test to identify CGM - transmitter codes etc might also be found and can be ignored. The measure relies on dm+d codes so might need recalculation if dm+d not imported before data.</p><p><table border="1" class="dataframe table">
-  <thead>
-    <tr style="text-align: right;">
-      <th>BNF_CODE</th>
-      <th>BNF_DESCRIPTION</th>
-      <th>CHEMICAL_SUBSTANCE_BNF_DESCR</th>
-    </tr>
-  </thead>
-  <tbody>
-    <tr>
-      <td>21480000113</td>
-      <td>GlucoMen iCan Sensor</td>
-      <td>Detection Sensor Interstitial Fluid/Gluc</td>
-    </tr>
-  </tbody>
-</table></p><h2>Tests passed:</h2><p><a href='https://github.com/ebmdatalab/openprescribing/tree/main/openprescribing/measures/definitions/lprubefacients.json'>lprubefacients.json</a> <span class="svg-icon"><svg xmlns="http://www.w3.org/2000/svg" fill="#15b01a" class="bi bi-check-lg" viewBox="0 0 16 16"><path d="M12.736 3.97a.733.733 0 0 1 1.047 0c.286.289.29.756.01 1.05L7.88 12.01a.733.733 0 0 1-1.065.02L3.217 8.384a.757.757 0 0 1 0-1.06.733.733 0 0 1 1.047 0l3.052 3.093 5.4-6.425z"/></svg></span></p><hr style="border: none; height: 2px; background-color: #0485d1; margin: 20px 0;"><h2>Other measures</h2><h3>Measures with testing disabled</h3><p><a href='https://github.com/ebmdatalab/openprescribing/tree/main/openprescribing/measures/definitions/icsdose.json'>icsdose</a></p><h3>Measures without testing information</h3><p><a href='https://github.com/ebmdatalab/openprescribing/tree/main/openprescribing/measures/definitions/statinintensity.json'>statinintensity</a></p>
+</table></p><h2>Tests passed:</h2><p><a href='https://github.com/ebmdatalab/openprescribing/tree/main/openprescribing/measures/definitions/edoxaban.json'>edoxaban.json</a> <span class="svg-icon"><svg xmlns="http://www.w3.org/2000/svg" fill="#15b01a" class="bi bi-check-lg" viewBox="0 0 16 16"><path d="M12.736 3.97a.733.733 0 0 1 1.047 0c.286.289.29.756.01 1.05L7.88 12.01a.733.733 0 0 1-1.065.02L3.217 8.384a.757.757 0 0 1 0-1.06.733.733 0 0 1 1.047 0l3.052 3.093 5.4-6.425z"/></svg></span></p><p><a href='https://github.com/ebmdatalab/openprescribing/tree/main/openprescribing/measures/definitions/lprubefacients.json'>lprubefacients.json</a> <span class="svg-icon"><svg xmlns="http://www.w3.org/2000/svg" fill="#15b01a" class="bi bi-check-lg" viewBox="0 0 16 16"><path d="M12.736 3.97a.733.733 0 0 1 1.047 0c.286.289.29.756.01 1.05L7.88 12.01a.733.733 0 0 1-1.065.02L3.217 8.384a.757.757 0 0 1 0-1.06.733.733 0 0 1 1.047 0l3.052 3.093 5.4-6.425z"/></svg></span></p><p><a href='https://github.com/ebmdatalab/openprescribing/tree/main/openprescribing/measures/definitions/nhse_bgts.json'>nhse_bgts.json</a> <span class="svg-icon"><svg xmlns="http://www.w3.org/2000/svg" fill="#15b01a" class="bi bi-check-lg" viewBox="0 0 16 16"><path d="M12.736 3.97a.733.733 0 0 1 1.047 0c.286.289.29.756.01 1.05L7.88 12.01a.733.733 0 0 1-1.065.02L3.217 8.384a.757.757 0 0 1 0-1.06.733.733 0 0 1 1.047 0l3.052 3.093 5.4-6.425z"/></svg></span></p><hr style="border: none; height: 2px; background-color: #0485d1; margin: 20px 0;"><h2>Other measures</h2><h3>Measures with testing disabled</h3><p><a href='https://github.com/ebmdatalab/openprescribing/tree/main/openprescribing/measures/definitions/icsdose.json'>icsdose</a></p><h3>Measures without testing information</h3><p><a href='https://github.com/ebmdatalab/openprescribing/tree/main/openprescribing/measures/definitions/statinintensity.json'>statinintensity</a></p>
     </div>
     </body>
     </html>
