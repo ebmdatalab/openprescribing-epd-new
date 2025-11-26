@@ -62,8 +62,10 @@ def convert_to_yyyymm(date):
     return yyyymm_str
 
 def update_reports(dataset_id):
+    logging.info(f"Updating reports.")
     latest_published_data = check_latest_published_data(dataset_id)
     latest_published_yyyymm = convert_to_yyyymm(latest_published_data)
+    logging.info(f"Latest published data {latest_published_yyyymm}")
 
     # FIND NEW PRODUCTS
     #sql = (

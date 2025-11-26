@@ -4,6 +4,7 @@ import pandas as pd
 import re
 import os
 import json
+import logging
 
 def make_bq_client():
     env_json = os.getenv("BQ_SERVICE_ACCOUNT_KEY")
@@ -33,13 +34,13 @@ def retrieve_historic_drugs(before_year_month: str | int) -> pd.DataFrame:
     client = make_bq_client()
 
     sql = """
-    SELECT DISTINCT
-        BNF_CHEMICAL_SUBSTANCE,
-        CHEMICAL_SUBSTANCE_BNF_DESCR,
-        BNF_CODE,
-        BNF_DESCRIPTION
-    FROM `ebmdatalab.hscic.raw_prescribing_v2`
-    WHERE SAFE_CAST(YEAR_MONTH AS INT64) < @cutoff
+        SELECT DISTINCT
+            BNF_CHEMICAL_SUBSTANCE,
+            CHEMICAL_SUBSTANCE_BNF_DESCR,
+            BNF_CODE,
+            BNF_DESCRIPTION
+        FROM `ebmdatalab.hscic.raw_prescribing_v2`
+        WHERE SAFE_CAST(REGEXP_REPLACE(YEAR_MONTH, r'[^0-9]', '') AS INT64) < @cutoff
     """
 
     job_config = bigquery.QueryJobConfig(
