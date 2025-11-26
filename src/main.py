@@ -8,7 +8,15 @@ from datetime import datetime
 import argparse
 import logging
 
-
+def validate_yyyymm(value):
+    try:
+        # Must be exactly six digits and form a valid year+month
+        datetime.strptime(value, "%Y%m")
+        return value
+    except ValueError:
+        raise argparse.ArgumentTypeError(
+            f"Invalid month '{value}'. Expected YYYYMM."
+        )
 
 def check_latest_published_report():
     def sort_files_by_date_desc(html_files):
@@ -61,11 +69,15 @@ def convert_to_yyyymm(date):
     yyyymm_str = ts.strftime('%Y%m')
     return yyyymm_str
 
-def update_reports(dataset_id):
+def update_reports(dataset_id, month=None):
     logging.info(f"Updating reports.")
-    latest_published_data = check_latest_published_data(dataset_id)
-    latest_published_yyyymm = convert_to_yyyymm(latest_published_data)
-    logging.info(f"Latest published data {latest_published_yyyymm}")
+    if month:
+        latest_published_yyyymm = month
+        logging.info(f"Using specified month {latest_published_yyyymm}")
+    else:
+        latest_published_data = check_latest_published_data(dataset_id)
+        latest_published_yyyymm = convert_to_yyyymm(latest_published_data)
+        logging.info(f"Latest published data {latest_published_yyyymm}")
 
     # FIND NEW PRODUCTS
     #sql = (
@@ -90,8 +102,12 @@ def update_reports(dataset_id):
         logging.info(f"Fetched {len(existing_data_extract)} existing records.")
 
         # Extract latest data from EPD
-        date_from = "latest"  # Can be "YYYYMM" or "earliest" or "latest", default="earliest"
-        date_to = "latest"  # Can be "YYYYMM" or "latest" or "latest-1", default="latest"
+        if month:
+            date_from = month  # Can be "YYYYMM" or "earliest" or "latest", default="earliest"
+            date_to = month  # Can be "YYYYMM" or "latest" or "latest-1", default="latest"
+        else:
+            date_from = "latest"  # Can be "YYYYMM" or "earliest" or "latest", default="earliest"
+            date_to = "latest"  # Can be "YYYYMM" or "latest" or "latest-1", default="latest"
 
         # Fetch latest data using BSA API
         latest_data_extract = bsa_utils.FetchData(resource=dataset_id, date_from=date_from, date_to=date_to, sql=sql)
@@ -145,15 +161,23 @@ def main():
         default="auto", 
         help="Specify the mode of operation. Choices are 'auto' (default) or 'force'."
     )
+
+    parser.add_argument(
+        "--month",
+        type=validate_yyyymm,
+        default=None,
+        help="Specify the month in YYYYMM format."
+    )
     
     # Parse the command-line arguments
     args = parser.parse_args()
     
     # Access the mode argument
     mode = args.mode
+    month = args.month
 
     if mode == "force":
-        update_reports(dataset_id)
+        update_reports(dataset_id, month=month)
     elif mode == "auto":
         if check_if_up_to_date(dataset_id):
             print("The reports are up to date.")
