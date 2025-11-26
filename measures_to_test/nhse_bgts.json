@@ -57,6 +57,6 @@
   "measure_type": "bnf_code",
   "radar_exclude": false,
   "testing_measure": true,
-  "testing_comments": "Simple test to identify new products based on set BNF code filter.",
+  "testing_comments": "Simple test to identify new products based on specified BNF code filter.",
   "testing_type": "numerator_bnf_codes_filter"
 }
