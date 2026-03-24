@@ -64,12 +64,48 @@ def check_if_up_to_date(dataset_id):
         logging.info(f"New data is available.")
         return False
     
+def compare_data(selected_dataset, existing_data_extract, latest_data_extract, data_for, exclude_chapters=[]):
+    if selected_dataset == 'epd':
+        logging.info(f"Comparing data for EPD dataset.")
+        try:
+            compare_data = utils.CompareLatest(
+                existing_data_extract,
+                latest_data_extract,
+                exclude_chapters=[]
+            )
+
+            chem_subs = compare_data.return_new_chem_subs()
+            bnf_codes = compare_data.return_new_bnf_codes()
+            return_new_desc_only = compare_data.return_new_desc_only()
+            utils.write_monthly_report_html(chem_subs, bnf_codes, return_new_desc_only, data_for)
+            utils.generate_list_reports_html()
+            testing_utils.run_tests(bnf_codes, data_for)
+        except Exception as e:
+            print(f"Error comparing data: {e}")
+            return
+    elif selected_dataset == 'scmd':
+        logging.info("Comparing data for SCMD dataset.")
+        try:
+            compare = utils.CompareLatestSCMD(
+                existing_data_extract,
+                latest_data_extract
+            )
+
+            new_vtms = compare.return_new_vtms()
+            new_vmps = compare.return_new_vmps()
+            utils.write_monthly_report_html_scmd(new_vtms, new_vmps, data_for)
+            utils.generate_list_reports_html_scmd()
+            #testing_utils.run_tests(new_vmps, data_for)
+        except Exception as e:
+            print(f"Error comparing data: {e}")
+            return
+    
 def convert_to_yyyymm(date):
     ts = pd.Timestamp(date)
     yyyymm_str = ts.strftime('%Y%m')
     return yyyymm_str
 
-def update_reports(dataset_id, month=None):
+def update_reports(dataset_id, selected_dataset, month=None):
     logging.info(f"Updating reports.")
     if month:
         latest_published_yyyymm = month
@@ -84,13 +120,21 @@ def update_reports(dataset_id, month=None):
     #    "SELECT DISTINCT BNF_CODE, BNF_DESCRIPTION, CHEMICAL_SUBSTANCE_BNF_DESCR "
     #    "{FROM_TABLE}"
     #)
-    sql = (
-        "SELECT DISTINCT "
-        "BNF_PRESENTATION_CODE AS BNF_CODE, "
-        "BNF_PRESENTATION_NAME AS BNF_DESCRIPTION, "
-        "BNF_CHEMICAL_SUBSTANCE AS CHEMICAL_SUBSTANCE_BNF_DESCR "
-        "{FROM_TABLE} "
-    )
+    if selected_dataset == 'epd':
+        sql = (
+            "SELECT DISTINCT "
+            "BNF_PRESENTATION_CODE AS BNF_CODE, "
+            "BNF_PRESENTATION_NAME AS BNF_DESCRIPTION, "
+            "BNF_CHEMICAL_SUBSTANCE AS CHEMICAL_SUBSTANCE_BNF_DESCR "
+            "{FROM_TABLE} "
+        )
+    elif selected_dataset == 'scmd':
+        sql = (
+            "SELECT DISTINCT "
+            "VMP_SNOMED_CODE AS vmp_snomed_code, "
+            "VMP_PRODUCT_NAME AS vmp_product_name "
+            "{FROM_TABLE} "
+        )        
 
     try:
         # Fetch existing data using BSA API
@@ -98,7 +142,10 @@ def update_reports(dataset_id, month=None):
         #date_to = "latest-1"  # Can be "YYYYMM" or "latest" or "latest-1", default="latest"
 
         #existing_data_extract = bsa_utils.FetchData(resource=dataset_id, date_from=date_from, date_to=date_to, sql=sql, cache=True)
-        existing_data_extract = op_utils.retrieve_historic_drugs(latest_published_yyyymm)
+        if selected_dataset == 'epd':
+            existing_data_extract = op_utils.retrieve_historic_drugs(latest_published_yyyymm)
+        elif selected_dataset == 'scmd':
+            existing_data_extract = op_utils.retrieve_historic_drugs_scmd(latest_published_yyyymm)
         logging.info(f"Fetched {len(existing_data_extract)} existing records.")
 
         # Extract latest data from EPD
@@ -129,28 +176,17 @@ def update_reports(dataset_id, month=None):
         return
     else:
         print("Data fetched successfully")
-    
-    try:
-        compare_data = utils.CompareLatest(
-            existing_data_extract,
-            latest_data_extract.results(),
-            exclude_chapters=[]
-        )
 
-        chem_subs = compare_data.return_new_chem_subs()
-        bnf_codes = compare_data.return_new_bnf_codes()
-        return_new_desc_only = compare_data.return_new_desc_only()
-        data_for = latest_data_extract.return_resources_to()
-        utils.write_monthly_report_html(chem_subs, bnf_codes, return_new_desc_only, data_for)
-        utils.generate_list_reports_html()
-        testing_utils.run_tests(bnf_codes, data_for)
-    except Exception as e:
-        print(f"Error comparing data: {e}")
-        return
+    data_for = latest_data_extract.return_resources_to()
+    latest_data_extract = latest_data_extract.results()
+
+    if selected_dataset == 'scmd':
+        existing_data_extract, latest_data_extract = op_utils.join_vtms(existing_data_extract, latest_data_extract)
+    
+    compare_data(selected_dataset, existing_data_extract, latest_data_extract, data_for, exclude_chapters=[])
 
 
 def main():
-    dataset_id = "english-prescribing-dataset-epd-with-snomed-code"  # Dataset ID
     # Create the parser
     parser = argparse.ArgumentParser(description="Process an optional mode argument.")
     
@@ -160,6 +196,14 @@ def main():
         choices=["auto", "force"], 
         default="auto", 
         help="Specify the mode of operation. Choices are 'auto' (default) or 'force'."
+    )
+
+    # Add the optional mode argument
+    parser.add_argument(
+        "--dataset", 
+        choices=["epd", "scmd"], 
+        default="epd", 
+        help="Specify the dataset. Choices are 'epd' (default) or 'scmd'."
     )
 
     parser.add_argument(
@@ -175,14 +219,20 @@ def main():
     # Access the mode argument
     mode = args.mode
     month = args.month
+    selected_dataset = args.dataset
+
+    if selected_dataset == 'epd':
+        dataset_id = "english-prescribing-dataset-epd-with-snomed-code"  # Dataset ID
+    elif selected_dataset == 'scmd':
+        dataset_id = "secondary-care-medicines-data-indicative-price"  # Dataset ID
 
     if mode == "force":
-        update_reports(dataset_id, month=month)
+        update_reports(dataset_id, selected_dataset, month=month)
     elif mode == "auto":
         if check_if_up_to_date(dataset_id):
             print("The reports are up to date.")
         else:
-            update_reports(dataset_id)
+            update_reports(dataset_id, selected_dataset)
 
 if __name__ == "__main__":
     main()
