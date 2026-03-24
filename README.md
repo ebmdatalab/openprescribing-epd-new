@@ -15,6 +15,17 @@ Our [New Items Reports](https://htmlpreview.github.io/?https://github.com/ebmdat
 3. **New or Changed BNF Descriptions**  
    For example, updated or modified descriptions of existing items.  
 
+### Secondary Care Medicines Data
+
+Our [SCMD New Items Reports](https://htmlpreview.github.io/?https://github.com/ebmdatalab/openprescribing-epd-new/blob/main/scmd_reports/list_reports_scmd.html) provide detailed information in two key sections:
+
+1. **New Virtual Therapeutic Moieties (VTMs)**  
+   For example, a new therapeutic moiety appearing in secondary care medicines data for the first time.
+
+2. **New Virtual Medicinal Products (VMPs)**  
+   For example, a new medicinal product or formulation appearing in secondary care medicines data for the first time.
+
+
 ## OpenPrescribing Tests
 
 Our [OpenPrescribing Tests Reports](https://htmlpreview.github.io/?https://github.com/ebmdatalab/openprescribing-epd-new/blob/main/reports/list_test_reports.html) enable us to identify new items that may impact our existing measures, helping to ensure the accuracy and relevance of our prescribing tools.
