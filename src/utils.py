@@ -167,6 +167,40 @@ class CompareLatest:
     def return_new_desc_only(self):
         return self.sort_by_bnf_code(self.new_desc_only)
 
+class CompareLatestSCMD:
+    def __init__(self, df_existing, df_latest):
+        self.df_existing = df_existing
+        self.df_latest = df_latest
+        self.new_vtms = None
+        self.new_vmps = None
+        self.find_vmp_only_in_latest()
+        self.find_vtm_only_in_latest()
+
+    def find_vmp_only_in_latest(self):
+        latest = set(self.df_latest['vmp_snomed_code'])
+        existing = set(self.df_existing['vmp_snomed_code'])
+        unique = latest - existing
+        self.new_vmps = self._sort(self.df_latest[self.df_latest['vmp_snomed_code'].isin(unique)])
+
+    def find_vtm_only_in_latest(self):
+        latest = set(self.df_latest['vtm_id'].dropna())
+        existing = set(self.df_existing['vtm_id'].dropna())
+        unique = latest - existing
+        self.new_vtms = self._sort(self.df_latest[self.df_latest['vtm_id'].isin(unique)])
+
+    @staticmethod
+    def _sort(df):
+        return df.sort_values(
+            ['vtm_nm', 'vmp_product_name'],
+            na_position='last'
+        ).reset_index(drop=True)
+
+    def return_new_vmps(self):
+        return self.new_vmps
+
+    def return_new_vtms(self):
+        return self.new_vtms
+
 def write_monthly_report_html(chem_subs, bnf_codes, bnf_descriptions, date):
     reports_dir = os.path.join(os.getcwd(), "reports")
     os.makedirs(reports_dir, exist_ok=True)
@@ -372,4 +406,191 @@ def generate_list_reports_html():
 
     # Write the HTML content to list_reports.html
     with open(os.path.join(reports_dir, 'list_reports.html'), 'w') as f:
+        f.write(html_content)
+
+def write_monthly_report_html_scmd(vtms, vmps, date):
+    reports_dir = os.path.join(os.getcwd(), "scmd_reports")
+    os.makedirs(reports_dir, exist_ok=True)
+
+    image_path = os.path.join(os.getcwd(), "src", "base64_image_oph.txt")
+    with open(image_path, "r") as file:
+        base64_image = file.read()
+
+    report = f"""
+    <html>
+    <head>
+    <title>Monthly New Item Report (SCMD) for {date}</title>
+    <style>
+        body {{
+            font-family: Arial, sans-serif;
+            background-color: #f8f9fa;
+            margin: 20px;
+            color: #333;
+        }}
+        .container {{
+            max-width: 900px;
+            margin: 0 auto;
+            padding: 20px;
+            background-color: white;
+            border-radius: 10px;
+            box-shadow: 0px 2px 5px rgba(0, 0, 0, 0.1);
+        }}
+        header {{
+            text-align: center;
+            margin-bottom: 40px;
+        }}
+        header img {{
+            max-width: 650px;
+            margin-bottom: 10px;
+        }}
+        h2 {{
+            color: #333;
+        }}
+        h3 {{
+            color: #333;
+            margin-top: 30px;
+        }}
+        p {{
+            margin-bottom: 15px;
+        }}
+        table {{
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 20px;
+            margin-bottom: 20px;
+        }}
+        table, th, td {{
+            border: 1px solid #333;
+        }}
+        th {{
+            background-color: #0485d1;
+            color: white;
+            padding: 10px;
+            text-align: left;
+        }}
+        td {{
+            padding: 8px;
+            text-align: left;
+        }}
+        tr:nth-child(even) {{
+            background-color: #f2f2f2;
+        }}
+        a {{
+            text-decoration: none;
+            color: #0485d1;
+        }}
+        a:hover {{
+            text-decoration: underline;
+        }}
+    </style>
+    </head>
+    <body>
+    <div class="container">
+        <header>
+            <img src="{base64_image}" alt="OpenPrescribing logo">
+            <h2>Monthly New Item Report (SCMD) for {date}</h2>
+        </header>
+        <p>This report details items appearing in the Secondary Care Medicines Data for {date} that have not previously appeared in the data.</p>
+        <p><a href="{preview_base_url}url=https://github.com/ebmdatalab/openprescribing-epd-new/blob/main/scmd_reports/list_reports_scmd.html">View previous reports</a></p>
+
+        <h3>New VTMs</h3>
+        <p>Virtual Therapeutic Moieties appearing in SCMD for the first time</p>
+        {vtms.to_html(index=False, classes='table')}
+
+        <h3>New VMPs</h3>
+        <p>Virtual Medicinal Products appearing in SCMD for the first time</p>
+        {vmps.to_html(index=False, classes='table')}
+    </div>
+    </body>
+    </html>
+    """
+
+    with open(f"{reports_dir}/monthly_report_scmd_{date}.html", "w") as file:
+        file.write(report)
+
+    print(f"Report written to {reports_dir}/monthly_report_scmd_{date}.html")
+
+
+def generate_list_reports_html_scmd():
+    reports_dir = os.path.join(os.getcwd(), "scmd_reports")
+
+    image_path = os.path.join(os.getcwd(), "src", "base64_image_oph.txt")
+    with open(image_path, "r") as file:
+        base64_image = file.read()
+
+    html_files = [
+        f for f in os.listdir(reports_dir)
+        if f.endswith('.html') and f != 'list_reports_scmd.html'
+    ]
+
+    def extract_date(filename):
+        date_part = filename.split('_')[-1].replace('.html', '')
+        return date_part
+
+    html_files = sorted(html_files, key=extract_date)
+
+    html_content = f"""
+    <html>
+    <head>
+    <title>Secondary Care Medicines Data - Monthly New Items Reports</title>
+    <style>
+        body {{
+            font-family: Arial, sans-serif;
+            background-color: #f8f9fa;
+            margin: 20px;
+        }}
+        a {{
+            text-decoration: none;
+            color: #0485d1;
+        }}
+        a:hover {{
+            text-decoration: underline;
+        }}
+        h2 {{
+            color: #333;
+        }}
+        li {{
+            margin: 10px 0;
+        }}
+        header {{
+            text-align: center;
+            margin-bottom: 40px;
+        }}
+        header img {{
+            max-width: 650px;
+            margin-bottom: 10px;
+        }}
+        .container {{
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 20px;
+            background-color: white;
+            border-radius: 10px;
+            box-shadow: 0px 2px 5px rgba(0, 0, 0, 0.1);
+        }}
+    </style>
+    </head>
+    <body>
+    <div class="container">
+        <header>
+            <img src="{base64_image}" alt="OpenPrescribing logo">
+            <h2>Secondary Care Medicines Data - Monthly New Items Reports</h2>
+        </header>
+        <ul>
+    """
+
+    for html_file in html_files:
+        title = os.path.splitext(html_file)[0].split('_')[-1]
+        title = pd.to_datetime(title).strftime('%B %Y')
+        link = f"{preview_base_url}https://github.com/ebmdatalab/openprescribing-epd-new/blob/main/scmd_reports/{html_file}"
+        html_content += f'<li><a href="{link}">{title}</a></li>\n'
+
+    html_content += """
+        </ul>
+    </div>
+    </body>
+    </html>
+    """
+
+    with open(os.path.join(reports_dir, 'list_reports_scmd.html'), 'w') as f:
         f.write(html_content)

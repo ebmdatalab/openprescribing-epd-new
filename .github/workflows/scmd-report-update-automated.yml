@@ -1,0 +1,44 @@
+name: English Prescribing Data Change Detector - Automated
+
+on:
+  workflow_dispatch:
+  schedule:
+    - cron: "0 10 * * *" # Runs at 10:00 AM GMT every day
+
+jobs:
+  run-script:
+    runs-on: ubuntu-latest
+
+    steps:
+    - name: Checkout repository
+      uses: actions/checkout@v3
+
+    - name: Set up Python
+      uses: actions/setup-python@v4
+      with:
+        python-version: '3.12'
+
+    - name: Install dependencies
+      run: |
+        python -m pip install --upgrade pip
+        pip install -r requirements.txt
+
+    - name: Run Python script
+      env:
+        BQ_SERVICE_ACCOUNT_KEY: ${{ secrets.BQ_SERVICE_ACCOUNT_KEY }}
+      run: python src/main.py --mode auto --dataset scmd
+
+    - name: Configure Git
+      run: |
+        git config user.name "github-actions[bot]"
+        git config user.email "github-actions[bot]@users.noreply.github.com"
+
+    - name: Commit changes
+      run: |
+        git add .
+        git commit -m "Automated report updates" || echo "No changes to commit"
+
+    - name: Push changes
+      run: git push
+      env:
+        TOKEN: ${{ secrets.GITHUB_TOKEN }}
