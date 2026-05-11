@@ -1,4 +1,4 @@
-name: English Prescribing Data Change Detector - Automated
+name: Secondary Care Medicines Data Change Detector - Automated
 
 on:
   workflow_dispatch:

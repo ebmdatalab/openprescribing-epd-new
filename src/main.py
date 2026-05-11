@@ -18,7 +18,7 @@ def validate_yyyymm(value):
             f"Invalid month '{value}'. Expected YYYYMM."
         )
 
-def check_latest_published_report():
+def check_latest_published_report(selected_dataset):
     def sort_files_by_date_desc(html_files):
         return sorted(
             html_files,
@@ -30,9 +30,14 @@ def check_latest_published_report():
             # Extract the date portion (YYYY-MM) from the filename
             return filename.split('_')[-1].split('.')[0] if '-' in filename else None
 
-    reports_dir = os.path.join(os.getcwd(), "reports")
+    if selected_dataset == 'scmd':
+        reports_dir = os.path.join(os.getcwd(), "scmd_reports")
+    else:
+        reports_dir = os.path.join(os.getcwd(), "reports")
+    
     report_html_files = [f for f in os.listdir(reports_dir) if f.endswith('.html') and f.startswith('monthly_report')]
     test_report_html_files = [f for f in os.listdir(reports_dir) if f.endswith('.html') and f.startswith('monthly_test_report')]
+    
     sorted_report_html_files = sort_files_by_date_desc(report_html_files)
     sorted_test_report_html_files = sort_files_by_date_desc(test_report_html_files)
     if extract_date(sorted_report_html_files[0]) == extract_date(sorted_test_report_html_files[0]):
@@ -45,9 +50,9 @@ def check_latest_published_data(dataset_id):
     latest_published_data_date = resources.return_latest_resource()
     return latest_published_data_date
     
-def check_if_up_to_date(dataset_id):
+def check_if_up_to_date(dataset_id, selected_dataset):
     logging.info(f"Checking if reports are up to date.")
-    latest_published_report = check_latest_published_report()
+    latest_published_report = check_latest_published_report(selected_dataset)
     try:
         latest_published_report = datetime.strptime(latest_published_report, "%Y-%m")
         logging.info(f"Latest published report is {latest_published_report.strftime('%Y-%m')}.")
@@ -229,7 +234,7 @@ def main():
     if mode == "force":
         update_reports(dataset_id, selected_dataset, month=month)
     elif mode == "auto":
-        if check_if_up_to_date(dataset_id):
+        if check_if_up_to_date(dataset_id, selected_dataset):
             print("The reports are up to date.")
         else:
             update_reports(dataset_id, selected_dataset)
