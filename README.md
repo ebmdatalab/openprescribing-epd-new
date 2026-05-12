@@ -4,7 +4,7 @@ The **OpenPrescribing English Prescribing Data Change Detector** is a tool desig
 
 ## New Items Reports
 
-Our [New Items Reports](https://htmlpreview.github.io/?https://github.com/ebmdatalab/openprescribing-epd-new/blob/main/reports/list_reports.html) provide detailed information in three key sections:
+Our [New Items Reports](https://htmlpreview.github.io/?https://github.com/ebmdatalab/openprescribing-epd-new/blob/main/reports/epd/changes/list_reports.html) provide detailed information in three key sections:
 
 1. **New or Changed Chemical Substance Descriptions**  
    For example, a new drug being prescribed in primary care for the first time (mostly) or an existing chemical substance description changing (rarely)
@@ -17,7 +17,7 @@ Our [New Items Reports](https://htmlpreview.github.io/?https://github.com/ebmdat
 
 ### Secondary Care Medicines Data
 
-Our [SCMD New Items Reports](https://htmlpreview.github.io/?https://github.com/ebmdatalab/openprescribing-epd-new/blob/main/scmd_reports/list_reports_scmd.html) provide detailed information in two key sections:
+Our [SCMD New Items Reports](https://htmlpreview.github.io/?https://github.com/ebmdatalab/openprescribing-epd-new/blob/main/reports/scmd/changes/list_reports_scmd.html) provide detailed information in two key sections:
 
 1. **New Virtual Therapeutic Moieties (VTMs)**  
    For example, a new therapeutic moiety appearing in secondary care medicines data for the first time.
@@ -28,4 +28,4 @@ Our [SCMD New Items Reports](https://htmlpreview.github.io/?https://github.com/e
 
 ## OpenPrescribing Tests
 
-Our [OpenPrescribing Tests Reports](https://htmlpreview.github.io/?https://github.com/ebmdatalab/openprescribing-epd-new/blob/main/reports/list_test_reports.html) enable us to identify new items that may impact our existing measures, helping to ensure the accuracy and relevance of our prescribing tools.
+Our [OpenPrescribing Tests Reports](https://htmlpreview.github.io/?https://github.com/ebmdatalab/openprescribing-epd-new/blob/main/reports/epd/tests/list_test_reports.html) enable us to identify new items that may impact our existing measures, helping to ensure the accuracy and relevance of our prescribing tools.

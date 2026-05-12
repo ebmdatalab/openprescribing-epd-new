@@ -30,20 +30,15 @@ def check_latest_published_report(selected_dataset):
             # Extract the date portion (YYYY-MM) from the filename
             return filename.split('_')[-1].split('.')[0] if '-' in filename else None
 
-    if selected_dataset == 'scmd':
-        reports_dir = os.path.join(os.getcwd(), "scmd_reports")
-    else:
-        reports_dir = os.path.join(os.getcwd(), "reports")
+    reports_changes_dir = os.path.join(os.getcwd(), "reports", selected_dataset, "changes")
+    reports_tests_dir = os.path.join(os.getcwd(), "reports", selected_dataset, "tests")
     
-    report_html_files = [f for f in os.listdir(reports_dir) if f.endswith('.html') and f.startswith('monthly_report')]
-    test_report_html_files = [f for f in os.listdir(reports_dir) if f.endswith('.html') and f.startswith('monthly_test_report')]
+    report_html_files = [f for f in os.listdir(reports_changes_dir) if f.endswith('.html') and f.startswith('monthly_report')]
+    test_report_html_files = [f for f in os.listdir(reports_tests_dir) if f.endswith('.html') and f.startswith('monthly_test_report')]
     
     sorted_report_html_files = sort_files_by_date_desc(report_html_files)
     sorted_test_report_html_files = sort_files_by_date_desc(test_report_html_files)
-    if extract_date(sorted_report_html_files[0]) == extract_date(sorted_test_report_html_files[0]):
-        return extract_date(sorted_report_html_files[0])
-    else:
-        return False
+    return extract_date(sorted_report_html_files[0])
 
 def check_latest_published_data(dataset_id):
     resources = bsa_utils.ResourceNames(resource=dataset_id)

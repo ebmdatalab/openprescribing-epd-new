@@ -288,11 +288,11 @@ def write_monthly_report_html(chem_subs, bnf_codes, bnf_descriptions, date):
     <div class="container">
         <header>
             <img src="{base64_image}" alt="OpenPrescribing logo">
-            <h2>Monthly New Item Report for {date}</h2>
+            <h2>Monthly English Prescribing Data New Item Report for {date}</h2>
         </header>
         <p>This report details items appearing in the English Prescribing Data for {date} that have not previously appeared in the data (from Jan 2014).</p>
         {jan_alert}
-        <p><a href="{preview_base_url}url=https://github.com/ebmdatalab/openprescribing-epd-new/blob/main/reports/list_reports.html">View previous reports</a></p>
+        <p><a href="{preview_base_url}url=https://github.com/ebmdatalab/openprescribing-epd-new/blob/main/reports/epd/changes/list_reports.html">View previous reports</a></p>
         
         <h3>New Chemical Substances</h3>
         <p>Identify "chemical substances" prescribed for the first time</p>
@@ -393,7 +393,7 @@ def generate_list_reports_html():
         # Create title for month and year
         title = title.split('_')[-1]
         title = pd.to_datetime(title).strftime('%B %Y')
-        link = f"{preview_base_url}https://github.com/ebmdatalab/openprescribing-epd-new/blob/main/reports/{html_file}"
+        link = f"{preview_base_url}https://github.com/ebmdatalab/openprescribing-epd-new/blob/main/reports/epd/changes/{html_file}"
         html_content += f'<li><a href="{link}">{title}</a></li>\n'
 
     # End the HTML content
@@ -488,10 +488,10 @@ def write_monthly_report_html_scmd(vtms, vmps, date):
     <div class="container">
         <header>
             <img src="{base64_image}" alt="OpenPrescribing logo">
-            <h2>Monthly New Item Report (SCMD) for {date}</h2>
+            <h2>Monthly Secondary Care Medicines Data New Item Report for {date}</h2>
         </header>
         <p>This report details items appearing in the Secondary Care Medicines Data for {date} that have not previously appeared in the data.</p>
-        <p><a href="{preview_base_url}url=https://github.com/ebmdatalab/openprescribing-epd-new/blob/main/scmd_reports/list_reports_scmd.html">View previous reports</a></p>
+        <p><a href="{preview_base_url}url=https://github.com/ebmdatalab/openprescribing-epd-new/blob/main/reports/scmd/changes/list_reports_scmd.html">View previous reports</a></p>
 
         <h3>New VTMs</h3>
         <p>Virtual Therapeutic Moieties appearing in SCMD for the first time</p>
@@ -582,7 +582,7 @@ def generate_list_reports_html_scmd():
     for html_file in html_files:
         title = os.path.splitext(html_file)[0].split('_')[-1]
         title = pd.to_datetime(title).strftime('%B %Y')
-        link = f"{preview_base_url}https://github.com/ebmdatalab/openprescribing-epd-new/blob/main/scmd_reports/{html_file}"
+        link = f"{preview_base_url}https://github.com/ebmdatalab/openprescribing-epd-new/blob/main/reports/scmd/changes/{html_file}"
         html_content += f'<li><a href="{link}">{title}</a></li>\n'
 
     html_content += """
