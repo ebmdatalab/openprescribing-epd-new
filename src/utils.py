@@ -202,7 +202,7 @@ class CompareLatestSCMD:
         return self.new_vtms
 
 def write_monthly_report_html(chem_subs, bnf_codes, bnf_descriptions, date):
-    reports_dir = os.path.join(os.getcwd(), "reports")
+    reports_dir = os.path.join(os.getcwd(), "reports", "epd", "changes")
     os.makedirs(reports_dir, exist_ok=True)
 
     image_path = os.path.join(os.getcwd(), "src", "base64_image.txt")
@@ -317,7 +317,7 @@ def write_monthly_report_html(chem_subs, bnf_codes, bnf_descriptions, date):
     print(f"Report written to {reports_dir}/monthly_report_{date}.html")
 
 def generate_list_reports_html():
-    reports_dir = os.path.join(os.getcwd(), "reports")
+    reports_dir = os.path.join(os.getcwd(), "reports", "epd", "changes")
     
     # Read the base64 image string from the file
     image_path = os.path.join(os.getcwd(), "src", "base64_image.txt")
@@ -409,7 +409,7 @@ def generate_list_reports_html():
         f.write(html_content)
 
 def write_monthly_report_html_scmd(vtms, vmps, date):
-    reports_dir = os.path.join(os.getcwd(), "scmd_reports")
+    reports_dir = os.path.join(os.getcwd(), "reports", "scmd", "changes")
     os.makedirs(reports_dir, exist_ok=True)
 
     image_path = os.path.join(os.getcwd(), "src", "base64_image_oph.txt")
@@ -512,7 +512,7 @@ def write_monthly_report_html_scmd(vtms, vmps, date):
 
 
 def generate_list_reports_html_scmd():
-    reports_dir = os.path.join(os.getcwd(), "scmd_reports")
+    reports_dir = os.path.join(os.getcwd(), "reports", "scmd", "changes")
 
     image_path = os.path.join(os.getcwd(), "src", "base64_image_oph.txt")
     with open(image_path, "r") as file:

@@ -258,7 +258,7 @@ def measures_filter(df, measure_data):
 ####### HTML REPORT CREATION #######
 
 def write_monthly_testing_report_html(triggered_tests, passed_tests, testing_false, testing_none, date):
-    reports_dir = os.path.join(os.getcwd(), "reports")
+    reports_dir = os.path.join(os.getcwd(), "reports", "epd", "tests")
     os.makedirs(reports_dir, exist_ok=True)
 
     # Create an alert if January data to explain BNF structure changes
@@ -405,7 +405,7 @@ def write_monthly_testing_report_html(triggered_tests, passed_tests, testing_fal
 
 
 def generate_list_reports_html():
-    reports_dir = os.path.join(os.getcwd(), "reports")
+    reports_dir = os.path.join(os.getcwd(), "reports", "epd", "tests")
     
     # Read the base64 image string from the file
     image_path = os.path.join(os.getcwd(), "src", "base64_image.txt")
