@@ -108,6 +108,9 @@ def join_vtms(existing_df, latest_df):
 
     df = client.query(sql, job_config=job_config).to_dataframe()
 
+    existing_df['vmp_snomed_code'] = existing_df['vmp_snomed_code'].astype(str)
+    latest_df['vmp_snomed_code'] = latest_df['vmp_snomed_code'].astype(str)
+
     existing_df = existing_df.merge(df, left_on='vmp_snomed_code', right_on='id', how='left')
     existing_df.drop(columns=['id'], inplace=True)
     latest_df = latest_df.merge(df, left_on='vmp_snomed_code', right_on='id', how='left')
