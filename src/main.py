@@ -18,6 +18,13 @@ def validate_yyyymm(value):
             f"Invalid month '{value}'. Expected YYYYMM."
         )
 
+def create_reports_directory(selected_dataset):
+    reports_dir = os.path.join(os.getcwd(), "reports", selected_dataset)
+    changes_dir = os.path.join(reports_dir, "changes")
+    tests_dir = os.path.join(reports_dir, "tests")
+    os.makedirs(changes_dir, exist_ok=True)
+    os.makedirs(tests_dir, exist_ok=True)
+
 def check_latest_published_report(selected_dataset):
     def sort_files_by_date_desc(html_files):
         return sorted(
@@ -225,6 +232,8 @@ def main():
         dataset_id = "english-prescribing-dataset-epd-with-snomed-code"  # Dataset ID
     elif selected_dataset == 'scmd':
         dataset_id = "secondary-care-medicines-data-indicative-price"  # Dataset ID
+
+    create_reports_directory(selected_dataset)
 
     if mode == "force":
         update_reports(dataset_id, selected_dataset, month=month)
